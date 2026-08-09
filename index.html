@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Grammar Trainer v0.3</title>
+<style>
+body{margin:0;background:#f5f7fb;font-family:system-ui;color:#17191f}.app{max-width:620px;margin:auto;padding:14px}.card{background:#fff;border:1px solid #dfe3eb;border-radius:20px;padding:20px}.hidden{display:none}h1{margin:0 0 8px}.muted{color:#687386}.small{font-size:13px;color:#687386}.role,.item,.metric{border:1px solid #dfe3eb;border-radius:14px;padding:14px;margin-top:10px;background:#fff}.role{cursor:pointer}.role strong{display:block;font-size:18px}button{width:100%;border:0;border-radius:12px;padding:13px;margin-top:10px;font-weight:800;font-size:15px}.primary{background:#202938;color:#fff}.secondary{background:#eef1f5;color:#17191f}.ghost{background:#fff;border:1px solid #dfe3eb;color:#17191f}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.badge{background:#eef1f5;border-radius:999px;padding:6px 10px;font-size:13px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.big{font-size:28px;font-weight:900}.row{display:flex;justify-content:space-between;gap:10px;align-items:center}.status{font-size:12px;font-weight:800;border-radius:999px;padding:5px 8px}.green{background:#e8f5ee;color:#18794e}.amber{background:#fff3df;color:#a15c00}.red{background:#fdebea;color:#b42318}.gray{background:#eef1f5;color:#687386}.bar{height:8px;background:#e9ecf2;border-radius:99px;overflow:hidden;margin-top:8px}.fill{height:100%;background:#737d8d}.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}.tabs button{margin:0;padding:10px}.active{background:#202938;color:white}.inactive{background:#eef1f5;color:#17191f}.problem{border-left:4px solid #b42318;background:#fff7f6;padding:10px 12px;border-radius:10px;margin-top:8px}
+</style>
+</head>
+<body>
+<main class="app">
+<section id="login" class="card">
+<h1>GRAMMAR TRAINER</h1><p class="muted">v0.3 architecture mockup</p>
+<h2>Choose profile</h2>
+<div class="role" onclick="student()"><strong>👦 Maxim</strong><span class="small">Student · lessons, training, personal progress</span></div>
+<div class="role" onclick="admin()"><strong>📊 Yuriy</strong><span class="small">Admin · progress and learning status only</span></div>
+<p class="small" style="margin-top:14px">Demo only: no password and no cloud sync yet.</p>
+</section>
+
+<section id="student" class="hidden">
+<div class="top"><div><strong>Hi, Maxim 👋</strong><div class="small">Student mode</div></div><span class="badge">62% overall</span></div>
+<div class="card">
+<h1>Your course</h1><p class="muted">Learn in blocks. Practice weak topics more often.</p>
+<div class="item"><div class="row"><div><strong>1. Present</strong><div class="small">Present Simple · Present Continuous</div></div><span class="status green">Secure</span></div><div class="bar"><div class="fill" style="width:86%"></div></div></div>
+<div class="item"><div class="row"><div><strong>2. Past</strong><div class="small">Past Simple · Past Continuous · irregular verbs</div></div><span class="status amber">Practice</span></div><div class="bar"><div class="fill" style="width:74%"></div></div></div>
+<div class="item"><div class="row"><div><strong>3. Perfect</strong><div class="small">Present Perfect · since/for · already/yet</div></div><span class="status red">Needs work</span></div><div class="bar"><div class="fill" style="width:43%"></div></div></div>
+<div class="item"><div class="row"><div><strong>4. Past Perfect</strong><div class="small">Past Perfect · Past Perfect Continuous</div></div><span class="status gray">Not started</span></div></div>
+<div class="item"><div class="row"><div><strong>5. Future</strong><div class="small">going to · will · present forms for future</div></div><span class="status gray">Not started</span></div></div>
+<button class="primary" onclick="alert('In the working version this starts the recommended training.')">START RECOMMENDED TRAINING</button>
+<button class="secondary">MIXED CHALLENGE</button>
+<button class="ghost" onclick="logout()">Switch profile</button>
+</div>
+</section>
+
+<section id="admin" class="hidden">
+<div class="top"><div><strong>Maxim · Progress</strong><div class="small">Admin view for Yuriy</div></div><span class="badge">Demo data</span></div>
+<div class="tabs">
+<button id="b1" class="active" onclick="tab('overview')">Overview</button>
+<button id="b2" class="inactive" onclick="tab('topics')">Topics</button>
+<button id="b3" class="inactive" onclick="tab('activity')">Activity</button>
+</div>
+
+<div id="overview" class="card">
+<h1>Learning status</h1>
+<div class="grid">
+<div class="metric"><div class="small">Overall</div><div class="big">62%</div></div>
+<div class="metric"><div class="small">Sessions</div><div class="big">12</div></div>
+<div class="metric"><div class="small">Tense recognition</div><div class="big">68%</div></div>
+<div class="metric"><div class="small">Verb forms</div><div class="big">82%</div></div>
+</div>
+<h2 style="margin-top:20px">Needs attention</h2>
+<div class="problem"><strong>Present Perfect vs Past Simple</strong><div class="small">43% correct · frequent tense-recognition errors</div></div>
+<div class="problem"><strong>has / have</strong><div class="small">construction errors despite correct tense choice</div></div>
+<div class="problem"><strong>Irregular verbs: go, see, write</strong><div class="small">V3 errors recur in Perfect forms</div></div>
+<h2 style="margin-top:20px">Current blocks</h2>
+<div class="item row"><span>Present</span><span class="status green">86%</span></div>
+<div class="item row"><span>Past</span><span class="status amber">74%</span></div>
+<div class="item row"><span>Perfect</span><span class="status red">43%</span></div>
+<div class="item row"><span>Past Perfect</span><span class="status gray">Not started</span></div>
+<div class="item row"><span>Future</span><span class="status gray">Not started</span></div>
+<button class="ghost" onclick="logout()">Switch profile</button>
+</div>
+
+<div id="topics" class="card hidden">
+<h1>Topic detail</h1>
+<div class="item row"><span>Present Simple</span><strong>91%</strong></div>
+<div class="item row"><span>Present Continuous</span><strong>81%</strong></div>
+<div class="item row"><span>Past Simple</span><strong>88%</strong></div>
+<div class="item row"><span>Past Continuous</span><strong>67%</strong></div>
+<div class="item row"><span>Present Perfect</span><strong>43%</strong></div>
+<div class="item row"><span>Irregular verbs</span><strong>76%</strong></div>
+<div class="item row"><span>Sentence construction</span><strong>61%</strong></div>
+<button class="ghost" onclick="logout()">Switch profile</button>
+</div>
+
+<div id="activity" class="card hidden">
+<h1>Recent activity</h1>
+<div class="item"><strong>Today</strong><div class="small">Perfect · 10 questions · 55%</div></div>
+<div class="item"><strong>Yesterday</strong><div class="small">Past · 10 questions · 80%</div></div>
+<div class="item"><strong>2 days ago</strong><div class="small">Present · 10 questions · 90%</div></div>
+<div class="item"><strong>4 days ago</strong><div class="small">Mixed Challenge · 10 questions · 65%</div></div>
+<button class="ghost" onclick="logout()">Switch profile</button>
+</div>
+</section>
+</main>
+
+<script>
+function hideAll(){["login","student","admin"].forEach(x=>document.getElementById(x).classList.add("hidden"))}
+function student(){hideAll();document.getElementById("student").classList.remove("hidden")}
+function admin(){hideAll();document.getElementById("admin").classList.remove("hidden");tab("overview")}
+function logout(){hideAll();document.getElementById("login").classList.remove("hidden")}
+function tab(id){
+["overview","topics","activity"].forEach(x=>document.getElementById(x).classList.add("hidden"));
+document.getElementById(id).classList.remove("hidden");
+document.getElementById("b1").className=id==="overview"?"active":"inactive";
+document.getElementById("b2").className=id==="topics"?"active":"inactive";
+document.getElementById("b3").className=id==="activity"?"active":"inactive";
+}
+</script>
+</body>
+</html>
