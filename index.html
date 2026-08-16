@@ -1,0 +1,1516 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#f5f7fb">
+<title>Grammar Trainer v1.0</title>
+<style>
+:root{
+ --bg:#f5f7fb;--card:#fff;--text:#17191f;--muted:#687386;--line:#dfe3eb;
+ --dark:#202938;--soft:#eef1f5;--green:#18794e;--amber:#a15c00;--red:#b42318
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--text)}
+.app{max-width:640px;margin:auto;padding:14px 12px 40px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px;box-shadow:0 8px 26px rgba(0,0,0,.04)}
+.hidden{display:none!important}
+h1,h2,h3,p{margin-top:0}h1{font-size:27px;margin-bottom:7px}h2{font-size:21px}h3{font-size:17px}
+.muted{color:var(--muted)}.small{font-size:13px;color:var(--muted)}
+label{display:block;font-weight:750;margin:14px 0 6px}
+input{width:100%;padding:13px 14px;border:1px solid var(--line);border-radius:12px;font-size:18px;outline:none}
+input:focus{border-color:#8c96a8}
+button{width:100%;padding:13px 14px;border:0;border-radius:12px;font-size:16px;font-weight:800;margin-top:10px;cursor:pointer}
+button:disabled{opacity:.55;cursor:default}
+.primary{background:var(--dark);color:#fff}.secondary{background:var(--soft);color:var(--text)}.ghost{background:#fff;color:var(--text);border:1px solid var(--line)}
+.profileChoice,.courseItem,.metric,.item{border:1px solid var(--line);border-radius:14px;padding:13px;margin-top:9px;background:#fff}
+.profileChoice{cursor:pointer}.profileChoice.selected{border:2px solid var(--dark);background:#f4f5f8}
+.courseItem{cursor:pointer}.courseItem:hover{background:#fafbfc}
+.top{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}
+.badge{display:inline-block;background:var(--soft);border-radius:999px;padding:6px 10px;font-size:13px;font-weight:750}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.status{font-size:12px;font-weight:800;border-radius:999px;padding:5px 8px;white-space:nowrap}
+.green{background:#e8f5ee;color:var(--green)}.amber{background:#fff3df;color:var(--amber)}.red{background:#fdebea;color:var(--red)}.gray{background:#eef1f5;color:#687386}
+.bar{height:8px;background:#e9ecf2;border-radius:99px;overflow:hidden;margin-top:8px}.fill{height:100%;background:#737d8d}
+.msg{padding:11px 12px;border-radius:10px;margin-top:12px;font-size:14px}.err{background:#fdebea;color:var(--red)}.okbox{background:#e8f5ee;color:var(--green)}
+.progress{font-weight:800;color:var(--muted);margin-bottom:14px}
+.sentence{font-size:25px;font-weight:750;line-height:1.35;margin:15px 0}
+.base{display:inline-block;background:var(--soft);padding:4px 8px;border-radius:8px;font-weight:750}
+.questionLabel{font-weight:850;margin:20px 0 8px}
+.choices{display:grid;gap:8px}
+.choice{margin:0;background:#f7f8fa;color:var(--text);border:1px solid var(--line);text-align:left}
+.choice.selected{border:2px solid var(--dark);background:#e9edf3}
+.feedback{border-top:1px solid var(--line);margin-top:18px;padding-top:15px;line-height:1.5}
+.good{color:var(--green);font-weight:850}.warn{color:var(--amber);font-weight:850}.bad{color:var(--red);font-weight:850}
+.explain{background:#f5f7fa;padding:12px;border-radius:12px;margin-top:10px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.big{font-size:28px;font-weight:900}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}.tabs button{margin:0;padding:10px;font-size:14px}
+.active{background:var(--dark);color:#fff}.inactive{background:var(--soft);color:var(--text)}
+.problem{border-left:4px solid var(--red);background:#fff7f6;padding:10px 12px;border-radius:10px;margin-top:8px}
+.resultScore{font-size:40px;font-weight:900;margin:6px 0}
+.pill{display:inline-block;padding:5px 8px;border-radius:999px;background:var(--soft);font-size:12px;font-weight:750;margin:3px}
+
+.missionCallout{border:1px solid var(--line);background:#f7f8fb;border-radius:16px;padding:14px;margin:12px 0 15px}
+.missionCallout strong{display:block;margin-bottom:4px}
+.missionNode{display:grid;grid-template-columns:42px 1fr auto;gap:10px;align-items:center}
+.missionNum{width:38px;height:38px;border-radius:50%;background:var(--dark);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900}
+.missionMeta{min-width:0}
+.missionTag{font-size:11px;font-weight:900;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+.quizHud{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;margin-bottom:12px}
+.hudBox{border:1px solid var(--line);background:#fff;border-radius:11px;padding:7px 9px;font-size:12px;font-weight:800}
+.stageNormal{background:#eef1f5;color:#4c5668}
+.stageRepair{background:#fff3df;color:var(--amber)}
+.stageBoss{background:#202938;color:#fff}
+.bossBanner{background:#202938;color:#fff;border-radius:14px;padding:11px 13px;margin:8px 0 14px;font-weight:850}
+.repairBanner{background:#fff3df;color:#7b4700;border-radius:14px;padding:11px 13px;margin:8px 0 14px;font-weight:800}
+.missionResult{background:#f5f7fa;border-radius:14px;padding:14px;margin:10px 0}
+.personalBest{font-weight:850;margin-top:7px}
+
+
+.masteryLine{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.masteryChip{font-size:11px;padding:5px 8px;border-radius:999px;background:#f1f3f6;border:1px solid var(--line)}
+.themeSelect{width:100%;padding:12px 13px;border:1px solid var(--line);border-radius:12px;font-size:16px;background:#fff}
+.typeBadge{display:inline-block;font-size:11px;font-weight:900;letter-spacing:.05em;text-transform:uppercase;padding:4px 7px;border-radius:999px;background:#eef1f5;color:#566070;margin:4px 0 8px}
+.wordTray{padding:10px 12px;border-radius:12px;background:#f7f8fb;border:1px dashed #c8ced8;margin:10px 0;font-weight:700}
+.choice.correctLike{border-color:#8aa4c0}
+.masteryHero{border:1px solid var(--line);border-radius:16px;padding:14px;margin:12px 0;background:#f8fafc}
+.masteryHero .big{font-size:28px;font-weight:900}
+.trendUp{color:#147a3d}.trendDown{color:#b42318}.trendFlat{color:#667085}
+
+@media(max-width:430px){.app{padding:10px 9px 28px}.card{padding:16px}.sentence{font-size:22px}h1{font-size:24px}}
+</style>
+</head>
+<body>
+<main class="app">
+
+<section id="login" class="card">
+<h1>GRAMMAR TRAINER</h1>
+<p class="muted">Choose your profile. The list is loaded automatically from Supabase.</p>
+<div id="profileLoading" class="item"><span class="small">Loading profiles from Supabase…</span></div>
+<div id="profileChoices"></div>
+<div id="manualProfileBox" class="hidden">
+ <label>Profile login</label>
+ <input id="manualProfile" type="text" autocomplete="username" placeholder="e.g. maxim">
+ <div class="small">Fallback only. The normal list is loaded automatically.</div>
+</div>
+<label>Password</label>
+<input id="password" type="password" autocomplete="current-password" placeholder="Password">
+<button id="loginBtn" class="primary" onclick="login()">SIGN IN</button>
+<div id="loginMessage" class="msg err hidden"></div>
+<p class="small" style="margin-top:14px">v1.0 · Adaptive Mission System</p>
+</section>
+
+<section id="studentHome" class="hidden">
+<div class="top">
+ <div><strong id="studentName">Student</strong><div class="small">Student mode</div></div>
+ <span id="studentOverall" class="badge">No data yet</span>
+</div>
+<div class="card">
+<h1>Your Mission Map</h1>
+<p class="muted">New situations, several challenge types, adaptive difficulty and a real Boss Challenge.</p>
+<div id="missionBrief" class="missionCallout">
+ <strong>Next mission</strong>
+ <div id="missionBriefText" class="small">Loading recommendation…</div>
+</div>
+<div id="courseList"></div>
+<button id="recommendedBtn" class="primary" onclick="openRecommendedLesson()">START NEXT MISSION</button>
+<button class="secondary" onclick="startWeakTopics()">FIX MY WEAK SPOT</button>
+<button class="secondary" onclick="openLesson('mixed')">MIXED BOSS MISSION</button>
+<button class="ghost" onclick="logout()">SIGN OUT</button>
+<p class="small" style="margin-top:14px">Current Mastery is based mainly on recent answers. Old mistakes stay in history but do not permanently hold your level down.</p>
+</div>
+</section>
+
+<section id="lesson" class="card hidden">
+<div id="lessonNumber" class="small"></div>
+<h1 id="lessonTitle">Lesson</h1>
+<p id="lessonIntro" class="muted"></p>
+<div id="lessonContent"></div>
+<div class="item" style="margin-top:16px">
+ <strong>Training goal</strong>
+ <div id="lessonGoal" class="small"></div>
+</div>
+<div class="item">
+ <strong>Mission theme</strong>
+ <div class="small" style="margin-bottom:8px">The grammar stays the same; the situations change.</div>
+ <select id="themeSelect" class="themeSelect" onchange="currentTheme=this.value">
+   <option value="random">Surprise me</option>
+   <option value="football">⚽ Football</option>
+   <option value="gaming">🎮 Gaming</option>
+   <option value="travel">✈️ Travel</option>
+   <option value="school">📚 School</option>
+   <option value="animals">🐾 Animals</option>
+   <option value="funny">😄 Funny situations</option>
+ </select>
+</div>
+<button class="primary" onclick="startLessonTraining()">START MISSION</button>
+<button class="secondary" onclick="startAdaptiveFromLesson()">ADAPTIVE MISSION</button>
+<button class="ghost" onclick="backToCourse()">← COURSE</button>
+</section>
+
+<section id="quiz" class="card hidden">
+<div class="quizHud">
+ <div id="quizStage" class="hudBox stageNormal">MISSION</div>
+ <div id="comboBadge" class="hudBox">Combo 0</div>
+ <div id="bestComboBadge" class="hudBox">Best 0</div>
+</div>
+<div id="quizBlock" class="small"></div>
+<div id="quizProgress" class="progress"></div>
+<div id="stageBanner" class="hidden"></div>
+<div id="questionTypeBadge" class="typeBadge">Fill form</div>
+<div id="quizSentence" class="sentence"></div>
+<div id="verbHint">Verb: <span id="quizBase" class="base"></span></div>
+<div id="wordTray" class="wordTray hidden"></div>
+
+<div class="questionLabel">1. Which tense / form?</div>
+<div id="quizChoices" class="choices"></div>
+
+<div id="answerLabel" class="questionLabel">2. Complete the sentence</div>
+<input id="quizAnswer" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="Type the complete verb form">
+<div id="verbChoices" class="choices hidden"></div>
+<button id="checkBtn" class="primary" onclick="checkAnswer()">CHECK</button>
+<div id="feedback" class="feedback hidden"></div>
+<button id="nextBtn" class="primary hidden" onclick="nextQuestion()">NEXT →</button>
+<button class="ghost" onclick="confirmQuit()">← COURSE</button>
+</section>
+
+<section id="results" class="card hidden">
+<h1>MISSION COMPLETE</h1>
+<div id="resultMissionMessage" class="missionResult"><strong>Mission complete.</strong></div>
+<div id="resultScore" class="resultScore">0 / 20</div>
+<p id="resultBest" class="personalBest"></p>
+<p id="resultCombo" class="small"></p>
+<p id="saveState" class="muted">Saving to cloud…</p>
+<div class="grid">
+ <div class="metric"><div class="small">Tense recognition</div><div id="resultGrammar" class="big">—</div></div>
+ <div class="metric"><div class="small">Sentence form</div><div id="resultConstruction" class="big">—</div></div>
+</div>
+<h2 style="margin-top:20px">Mission report</h2>
+<div id="resultTopics"></div>
+<button id="practiceMistakesBtn" class="primary hidden" onclick="practiceMistakes()">FIX THESE MISTAKES</button>
+<button class="secondary" onclick="repeatTraining()">REPEAT THIS MISSION</button>
+<button class="ghost" onclick="backToCourse()">BACK TO MISSION MAP</button>
+</section>
+
+<section id="admin" class="hidden">
+<div class="top">
+ <div><strong id="adminStudentTitle">Student · Progress</strong><div class="small">Admin view for Yuriy</div></div>
+ <span id="adminSync" class="badge">Connected</span>
+</div>
+<div class="card" style="margin-bottom:12px">
+ <label for="adminStudentSelect" style="margin-top:0">Student</label>
+ <select id="adminStudentSelect" onchange="changeAdminStudent()" style="width:100%;padding:12px 13px;border:1px solid var(--line);border-radius:12px;font-size:16px;background:white">
+   <option value="">Loading students…</option>
+ </select>
+</div>
+<div class="tabs">
+<button id="tabOverviewBtn" class="active" onclick="adminTab('overview')">Overview</button>
+<button id="tabTopicsBtn" class="inactive" onclick="adminTab('topics')">Topics</button>
+<button id="tabActivityBtn" class="inactive" onclick="adminTab('activity')">Activity</button>
+</div>
+
+<div id="adminOverview" class="card">
+<h1>Learning status</h1>
+<div class="grid">
+ <div class="metric"><div class="small">Sessions</div><div id="metricSessions" class="big">0</div></div>
+ <div class="metric"><div class="small">Topics practiced</div><div id="metricTopics" class="big">0</div></div>
+ <div class="metric"><div class="small">Tense recognition</div><div id="metricTense" class="big">—</div></div>
+ <div class="metric"><div class="small">Verb forms</div><div id="metricVerb" class="big">—</div></div>
+ <div class="metric"><div class="small">Sentence construction</div><div id="metricConstruction" class="big">—</div></div>
+</div>
+<h2 style="margin-top:20px">Needs attention</h2>
+<div id="needsAttention"><div class="small">No training data yet.</div></div>
+<button class="secondary" onclick="refreshAdmin()">REFRESH DATA</button>
+<button class="ghost" onclick="logout()">SIGN OUT</button>
+</div>
+
+<div id="adminTopics" class="card hidden">
+<h1>Topic detail</h1>
+<div id="adminTopicsList"><div class="small">No topic data yet.</div></div>
+<h2 style="margin-top:20px">Most frequent error types</h2>
+<div id="adminErrorTypes"><div class="small">No error data yet.</div></div>
+<h2 style="margin-top:20px">Recent mistakes</h2>
+<div id="adminRecentMistakes"><div class="small">No mistakes yet.</div></div>
+<button class="ghost" onclick="logout()">SIGN OUT</button>
+</div>
+
+<div id="adminActivity" class="card hidden">
+<h1>Recent activity</h1>
+<div id="adminActivityList"><div class="small">No sessions yet.</div></div>
+<button class="ghost" onclick="logout()">SIGN OUT</button>
+</div>
+</section>
+
+</main>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+const supabase=createClient('https://hrckmcberwexvhhiidax.supabase.co','sb_publishable_ny0wnMyIIidsKirqtKim3g_tNwbdiHw');
+
+let loginProfiles=[];
+let selectedProfile=null;
+let currentUser=null;
+let currentProfile=null;
+let currentBlock='present';
+let currentLesson='present';
+let currentQueue=[];
+let questionIndex=0;
+let selectedGrammar='';
+let sessionAnswers=[];
+let sessionStartedAt=null;
+let lastProgress=[];
+let recommendedBlock='present';
+let adminStudentId=null;
+let adminStudents=[];
+let practiceSource=[];
+let isMistakePractice=false;
+let isWeakMission=false;
+let missionCombo=0;
+let missionBestCombo=0;
+let remediationCount=0;
+let previousBest=null;
+let missionBaseQuestions=0;
+let currentTheme='random';
+let activeMissionTheme='random';
+let selectedVerbAnswer='';
+let recentAnswers=[];
+let masteryByTopic={};
+let recentQuestionCooldown={};
+
+const BLOCKS={
+ present:{name:'1. Present Basics',desc:'Present Simple ↔ Present Continuous',topics:['present_simple','present_continuous']},
+ perfect:{name:'2. Present Perfect',desc:'Present Perfect · already/yet · ever/never · since/for · Present Perfect Continuous',topics:['present_perfect','present_perfect_continuous']},
+ past:{name:'3. Past',desc:'Past Simple ↔ Past Continuous · irregular verbs',topics:['past_simple','past_continuous']},
+ pastperfect:{name:'4. Past Perfect',desc:'Past Perfect · Past Perfect Continuous',topics:['past_perfect','past_perfect_continuous']},
+ future:{name:'5. Future',desc:'going to · will · Present Continuous for future · Present Simple for future',topics:['going_to_future','will_future','present_continuous_future','present_simple_future']},
+ mixed:{name:'6. Mixed Tenses Challenge',desc:'All tense forms mixed',topics:[]}
+};
+
+const TOPIC_NAMES={
+ present_simple:'Present Simple',
+ present_continuous:'Present Continuous',
+ present_perfect:'Present Perfect',
+ present_perfect_continuous:'Present Perfect Continuous',
+ past_simple:'Past Simple',
+ past_continuous:'Past Continuous',
+ past_perfect:'Past Perfect',
+ past_perfect_continuous:'Past Perfect Continuous',
+ going_to_future:'going to-future',
+ will_future:'will-future',
+ present_continuous_future:'Present Continuous for future',
+ present_simple_future:'Present Simple for future'
+};
+
+
+const LESSONS={
+ present:{
+   title:'Present Simple vs Present Continuous',
+   intro:'Use the meaning of the sentence first. Signal words help, but the action type matters more.',
+   goal:'Recognize habits/general facts versus actions happening now, then build the correct verb form.',
+   points:[
+     ['Present Simple','Habits, routines and general facts. Example: I usually eat breakfast at 7.'],
+     ['3rd person','With he / she / it, the verb normally gets -s: He lives, she takes.'],
+     ['Present Continuous','Action happening now or around now: am / is / are + verb-ing.'],
+     ['Typical clues','usually, often, every day → Present Simple; now, at the moment, Look! → Present Continuous.']
+   ]
+ },
+ perfect:{
+   title:'Present Perfect & Present Perfect Continuous',
+   intro:'Both connect the past with the present. The key question is whether you focus on a result/experience or on an activity continuing over time.',
+   goal:'Choose between have/has + V3 and have/has been + -ing, and use already/yet, ever/never, since/for correctly.',
+   points:[
+     ['Present Perfect','have / has + V3. Use for experience or a result connected to now.'],
+     ['already / yet','already normally comes between have/has and V3; yet is commonly at the end.'],
+     ['ever / never','Placed between have/has and V3: Have you ever seen…? I have never been…'],
+     ['since / for','since = starting point; for = duration.'],
+     ['Present Perfect Continuous','have / has been + verb-ing, especially for an activity continuing for a period.']
+   ]
+ },
+ past:{
+   title:'Past Simple vs Past Continuous',
+   intro:'Past Simple tells what happened. Past Continuous describes what was in progress at a past moment.',
+   goal:'Recognize finished past events versus background actions in progress, and choose V2 or was/were + -ing.',
+   points:[
+     ['Past Simple','Finished action in the past. Regular verbs usually take -ed; irregular verbs use V2.'],
+     ['Past Continuous','was / were + verb-ing. Use for an action in progress at a particular past time.'],
+     ['Contrast','I saw an accident while I was walking home. The short event is Past Simple; the background action is Past Continuous.'],
+     ['Typical clues','yesterday, last…, …ago → often Past Simple; while, at 8 p.m. yesterday → often Past Continuous.']
+   ]
+ },
+ pastperfect:{
+   title:'Past Perfect & Past Perfect Continuous',
+   intro:'These forms look further back from a point that is already in the past.',
+   goal:'Recognize an action completed before another past action versus an activity continuing before a past point.',
+   points:[
+     ['Past Perfect','had + V3. Use for the earlier of two past actions.'],
+     ['Past Perfect Continuous','had been + verb-ing. Use for an activity continuing for some time before another past event.'],
+     ['Contrast','I had finished before he arrived. / I had been waiting for an hour when he arrived.']
+   ]
+ },
+ future:{
+   title:'Four ways to talk about the future',
+   intro:'The book distinguishes future forms by intention, prediction, arrangement and timetable.',
+   goal:'Choose the future form from the situation, not just from the word “tomorrow”.',
+   points:[
+     ['going to','Intention or an obvious future event: Look! It is going to rain.'],
+     ['will','Prediction or promise: I think it will… / I promise I will…'],
+     ['Present Continuous','A future plan or arrangement: We are leaving tomorrow.'],
+     ['Present Simple','A timetable or schedule: The train leaves at 9:15.']
+   ]
+ },
+ mixed:{
+   title:'Mixed Tenses Challenge',
+   intro:'All tense forms are mixed. Decide from the meaning, then build the correct form.',
+   goal:'Identify the grammar without knowing the block in advance.',
+   points:[
+     ['Strategy 1','Ask: Is this habit, now, finished past, past-in-progress, connected-to-now, earlier-past, or future?'],
+     ['Strategy 2','Only after choosing the tense, choose the verb form: base / -s / -ing / V2 / V3.'],
+     ['Strategy 3','Use signal words as clues, not as automatic rules.']
+   ]
+ }
+};
+
+
+const THEMES={
+ football:{label:'Football',icon:'⚽',anchor:'the match started'},
+ gaming:{label:'Gaming',icon:'🎮',anchor:'the tournament began'},
+ travel:{label:'Travel',icon:'✈️',anchor:'the bus arrived'},
+ school:{label:'School',icon:'📚',anchor:'the lesson started'},
+ animals:{label:'Animals',icon:'🐾',anchor:'the visitors arrived'},
+ funny:{label:'Funny situations',icon:'😄',anchor:'everyone came into the room'}
+};
+
+const ACTIONS=[
+ {theme:'football',subject:'he',third:true,be:'is',pastBe:'was',have:'has',base:'train',s:'trains',past:'trained',pp:'trained',ing:'training',comp:'with his team'},
+ {theme:'football',subject:'she',third:true,be:'is',pastBe:'was',have:'has',base:'practice',s:'practices',past:'practiced',pp:'practiced',ing:'practicing',comp:'free kicks'},
+ {theme:'football',subject:'the goalkeeper',third:true,be:'is',pastBe:'was',have:'has',base:'catch',s:'catches',past:'caught',pp:'caught',ing:'catching',comp:'difficult shots'},
+ {theme:'football',subject:'the players',third:false,be:'are',pastBe:'were',have:'have',base:'pass',s:'pass',past:'passed',pp:'passed',ing:'passing',comp:'the ball quickly'},
+ {theme:'football',subject:'the coach',third:true,be:'is',pastBe:'was',have:'has',base:'watch',s:'watches',past:'watched',pp:'watched',ing:'watching',comp:'the team carefully'},
+
+ {theme:'gaming',subject:'I',third:false,be:'am',pastBe:'was',have:'have',base:'play',s:'play',past:'played',pp:'played',ing:'playing',comp:'a strategy game'},
+ {theme:'gaming',subject:'my brother',third:true,be:'is',pastBe:'was',have:'has',base:'finish',s:'finishes',past:'finished',pp:'finished',ing:'finishing',comp:'a difficult level'},
+ {theme:'gaming',subject:'she',third:true,be:'is',pastBe:'was',have:'has',base:'build',s:'builds',past:'built',pp:'built',ing:'building',comp:'a new base'},
+ {theme:'gaming',subject:'they',third:false,be:'are',pastBe:'were',have:'have',base:'win',s:'win',past:'won',pp:'won',ing:'winning',comp:'online matches'},
+ {theme:'gaming',subject:'he',third:true,be:'is',pastBe:'was',have:'has',base:'choose',s:'chooses',past:'chose',pp:'chosen',ing:'choosing',comp:'a new character'},
+
+ {theme:'travel',subject:'we',third:false,be:'are',pastBe:'were',have:'have',base:'visit',s:'visit',past:'visited',pp:'visited',ing:'visiting',comp:'a new city'},
+ {theme:'travel',subject:'she',third:true,be:'is',pastBe:'was',have:'has',base:'pack',s:'packs',past:'packed',pp:'packed',ing:'packing',comp:'her suitcase'},
+ {theme:'travel',subject:'he',third:true,be:'is',pastBe:'was',have:'has',base:'take',s:'takes',past:'took',pp:'taken',ing:'taking',comp:'photos of the mountains'},
+ {theme:'travel',subject:'they',third:false,be:'are',pastBe:'were',have:'have',base:'wait',s:'wait',past:'waited',pp:'waited',ing:'waiting',comp:'for the train'},
+ {theme:'travel',subject:'my family',third:true,be:'is',pastBe:'was',have:'has',base:'explore',s:'explores',past:'explored',pp:'explored',ing:'exploring',comp:'the old town'},
+
+ {theme:'school',subject:'I',third:false,be:'am',pastBe:'was',have:'have',base:'study',s:'study',past:'studied',pp:'studied',ing:'studying',comp:'English grammar'},
+ {theme:'school',subject:'the teacher',third:true,be:'is',pastBe:'was',have:'has',base:'explain',s:'explains',past:'explained',pp:'explained',ing:'explaining',comp:'a difficult rule'},
+ {theme:'school',subject:'he',third:true,be:'is',pastBe:'was',have:'has',base:'write',s:'writes',past:'wrote',pp:'written',ing:'writing',comp:'a short report'},
+ {theme:'school',subject:'the students',third:false,be:'are',pastBe:'were',have:'have',base:'read',s:'read',past:'read',pp:'read',ing:'reading',comp:'a science article'},
+ {theme:'school',subject:'she',third:true,be:'is',pastBe:'was',have:'has',base:'bring',s:'brings',past:'brought',pp:'brought',ing:'bringing',comp:'her notebook to class'},
+
+ {theme:'animals',subject:'the dog',third:true,be:'is',pastBe:'was',have:'has',base:'chase',s:'chases',past:'chased',pp:'chased',ing:'chasing',comp:'a ball in the garden'},
+ {theme:'animals',subject:'the cat',third:true,be:'is',pastBe:'was',have:'has',base:'sleep',s:'sleeps',past:'slept',pp:'slept',ing:'sleeping',comp:'on the sofa'},
+ {theme:'animals',subject:'the birds',third:false,be:'are',pastBe:'were',have:'have',base:'fly',s:'fly',past:'flew',pp:'flown',ing:'flying',comp:'over the lake'},
+ {theme:'animals',subject:'the elephant',third:true,be:'is',pastBe:'was',have:'has',base:'drink',s:'drinks',past:'drank',pp:'drunk',ing:'drinking',comp:'water from the pool'},
+ {theme:'animals',subject:'the fox',third:true,be:'is',pastBe:'was',have:'has',base:'hide',s:'hides',past:'hid',pp:'hidden',ing:'hiding',comp:'behind the rocks'},
+
+ {theme:'funny',subject:'dad',third:true,be:'is',pastBe:'was',have:'has',base:'dance',s:'dances',past:'danced',pp:'danced',ing:'dancing',comp:'in the kitchen'},
+ {theme:'funny',subject:'grandma',third:true,be:'is',pastBe:'was',have:'has',base:'send',s:'sends',past:'sent',pp:'sent',ing:'sending',comp:'funny memes'},
+ {theme:'funny',subject:'the robot',third:true,be:'is',pastBe:'was',have:'has',base:'clean',s:'cleans',past:'cleaned',pp:'cleaned',ing:'cleaning',comp:'my bedroom'},
+ {theme:'funny',subject:'the parrot',third:true,be:'is',pastBe:'was',have:'has',base:'steal',s:'steals',past:'stole',pp:'stolen',ing:'stealing',comp:'biscuits from the table'},
+ {theme:'funny',subject:'my friend',third:true,be:'is',pastBe:'was',have:'has',base:'wear',s:'wears',past:'wore',pp:'worn',ing:'wearing',comp:'a superhero cape'}
+];
+
+const SCHEDULE_ITEMS=[
+ ['football','the match','start','starts','at 6:00 p.m.'],
+ ['football','training','begin','begins','at 4:30 p.m.'],
+ ['football','the stadium gates','open','open','at 5:00 p.m.'],
+ ['football','the team bus','leave','leaves','at 3:45 p.m.'],
+ ['football','the final','finish','finishes','at about 9:00 p.m.'],
+ ['gaming','the online tournament','start','starts','at 7:00 p.m.'],
+ ['gaming','the game update','launch','launches','on Friday'],
+ ['gaming','the server maintenance','begin','begins','at midnight'],
+ ['gaming','the livestream','end','ends','at 10:00 p.m.'],
+ ['gaming','the next round','open','opens','at 8:15 p.m.'],
+ ['travel','the train','leave','leaves','at 9:15 a.m.'],
+ ['travel','the flight','depart','departs','at 11:40 a.m.'],
+ ['travel','the ferry','arrive','arrives','at 2:20 p.m.'],
+ ['travel','the museum tour','start','starts','at 10:30 a.m.'],
+ ['travel','the airport bus','run','runs','every thirty minutes'],
+ ['school','the first lesson','start','starts','at 8:00 a.m.'],
+ ['school','school','finish','finishes','at 2:10 p.m.'],
+ ['school','the library','close','closes','at 5:00 p.m.'],
+ ['school','the science club','meet','meets','on Wednesday'],
+ ['school','the exam','begin','begins','at 9:00 a.m.'],
+ ['animals','the zoo','open','opens','at 9:00 a.m.'],
+ ['animals','the penguin feeding','start','starts','at noon'],
+ ['animals','the safari bus','leave','leaves','at 1:30 p.m.'],
+ ['animals','the aquarium show','begin','begins','at 3:00 p.m.'],
+ ['animals','the animal park','close','closes','at 6:00 p.m.'],
+ ['funny','the costume contest','start','starts','at 6:30 p.m.'],
+ ['funny','the school disco','finish','finishes','at 9:00 p.m.'],
+ ['funny','the magic show','begin','begins','at 7:15 p.m.'],
+ ['funny','the pizza delivery','arrive','arrives','at 8:00 p.m.'],
+ ['funny','the comedy programme','start','starts','at 8:30 p.m.']
+];
+
+function cap(s){return s.charAt(0).toUpperCase()+s.slice(1)}
+function unique(arr){return [...new Set(arr.filter(Boolean))]}
+function qTypeFor(i){return ['fill_form','multiple_choice','word_order','error_correction'][i%4]}
+function difficultyFor(i){return (i%3)+1}
+
+function formSet(a){
+ return {
+  present_simple:a.third?a.s:a.base,
+  present_continuous:`${a.be} ${a.ing}`,
+  present_perfect:`${a.have} ${a.pp}`,
+  present_perfect_continuous:`${a.have} been ${a.ing}`,
+  past_simple:a.past,
+  past_continuous:`${a.pastBe} ${a.ing}`,
+  past_perfect:`had ${a.pp}`,
+  past_perfect_continuous:`had been ${a.ing}`,
+  going_to_future:`${a.be} going to ${a.base}`,
+  will_future:`will ${a.base}`,
+  present_continuous_future:`${a.be} ${a.ing}`
+ };
+}
+
+function lexicalMain(topic,a){
+ const map={
+  present_simple:a.third?a.s:a.base,
+  present_continuous:a.ing,
+  present_perfect:a.pp,
+  present_perfect_continuous:a.ing,
+  past_simple:a.past,
+  past_continuous:a.ing,
+  past_perfect:a.pp,
+  past_perfect_continuous:a.ing,
+  going_to_future:a.base,
+  will_future:a.base,
+  present_continuous_future:a.ing
+ };
+ return [map[topic]];
+}
+
+function topicSpec(topic,a){
+ const f=formSet(a), anchor=THEMES[a.theme].anchor;
+ const specs={
+  present_simple:{block:'present',grammar:'Present Simple',sentence:`Every week, ${a.subject} ___ ${a.comp}.`,answer:f.present_simple,why:'This describes a repeated habit or routine. Use Present Simple.'},
+  present_continuous:{block:'present',grammar:'Present Continuous',sentence:`Right now, ${a.subject} ___ ${a.comp}.`,answer:f.present_continuous,why:'The action is happening now. Present Continuous = am/is/are + verb-ing.'},
+  present_perfect:{block:'perfect',grammar:'Present Perfect',sentence:`So far, ${a.subject} ___ ${a.comp}.`,answer:f.present_perfect,why:'The action is connected to the present and no finished past time is given. Present Perfect = have/has + V3.'},
+  present_perfect_continuous:{block:'perfect',grammar:'Present Perfect Continuous',sentence:`For the last hour, ${a.subject} ___ ${a.comp}.`,answer:f.present_perfect_continuous,why:'This focuses on an activity continuing over a period up to now. Use have/has been + verb-ing.'},
+  past_simple:{block:'past',grammar:'Past Simple',sentence:`Yesterday, ${a.subject} ___ ${a.comp}.`,answer:f.past_simple,why:'This is a finished action at a finished past time. Use Past Simple.'},
+  past_continuous:{block:'past',grammar:'Past Continuous',sentence:`At 7 p.m. yesterday, ${a.subject} ___ ${a.comp}.`,answer:f.past_continuous,why:'The action was in progress at a specific past moment. Use was/were + verb-ing.'},
+  past_perfect:{block:'pastperfect',grammar:'Past Perfect',sentence:`Before ${anchor}, ${a.subject} ___ ${a.comp}.`,answer:f.past_perfect,why:'This action happened before another point in the past. Past Perfect = had + V3.'},
+  past_perfect_continuous:{block:'pastperfect',grammar:'Past Perfect Continuous',sentence:`For an hour before ${anchor}, ${a.subject} ___ ${a.comp}.`,answer:f.past_perfect_continuous,why:'This activity continued for some time before another past event. Use had been + verb-ing.'},
+  going_to_future:{block:'future',grammar:'going to-future',sentence:`The intention is clear: tomorrow, ${a.subject} ___ ${a.comp}.`,answer:f.going_to_future,why:'This is an intention or plan. Use am/is/are going to + base verb.'},
+  will_future:{block:'future',grammar:'will-future',sentence:`I think ${a.subject} ___ ${a.comp} tomorrow.`,answer:f.will_future,why:'This is a prediction. Use will + base verb.'},
+  present_continuous_future:{block:'future',grammar:'Present Continuous for future',sentence:`Everything is arranged: tomorrow at 5, ${a.subject} ___ ${a.comp}.`,answer:f.present_continuous_future,why:'This is a future arrangement. Use Present Continuous.'}
+ };
+ return specs[topic];
+}
+
+function wrongForms(a,correct){
+ const f=formSet(a);
+ return unique([
+   a.base,a.s,a.past,
+   `${a.be} ${a.ing}`,
+   `${a.have} ${a.pp}`,
+   `had ${a.pp}`,
+   `will ${a.base}`,
+   `${a.be} going to ${a.base}`
+ ]).filter(x=>norm(x)!==norm(correct));
+}
+
+function makeQuestion(topic,a,i){
+ const s=topicSpec(topic,a);
+ const type=qTypeFor(i);
+ const difficulty=difficultyFor(i);
+ const wrong=wrongForms(a,s.answer);
+ const plausibleWrong=wrong[(i+2)%wrong.length];
+ const sentence=type==='error_correction'
+   ? s.sentence.replace('___',plausibleWrong)
+   : s.sentence;
+ const choices=shuffle(unique([s.answer,...wrong])).slice(0,4);
+ if(!choices.some(x=>norm(x)===norm(s.answer)))choices[0]=s.answer;
+ return {
+   id:`${topic.toUpperCase()}_${String(i+1).padStart(3,'0')}`,
+   block:s.block,topic,grammar:s.grammar,theme:a.theme,difficulty,
+   question_type:type,
+   sentence,
+   base:a.base,
+   answers:[s.answer],
+   main:lexicalMain(topic,a),
+   why:s.why,
+   forms:`${a.base} → ${a.past} → ${a.pp}`,
+   options:shuffle(choices),
+   word_order:shuffle(s.answer.split(' ')),
+   original_blank:s.sentence
+ };
+}
+
+function makeScheduleQuestion(row,i){
+ const [theme,subject,base,s,when]=row;
+ const answer=s;
+ const type=qTypeFor(i);
+ const blank=`According to the schedule, ${subject} ___ ${when}.`;
+ const wrongs=unique([base,`${base}ing`,`will ${base}`,`is ${base}ing`,`${s}ing`]).filter(x=>norm(x)!==norm(answer));
+ const plausibleWrong=wrongs[i%wrongs.length];
+ const sentence=type==='error_correction'?blank.replace('___',plausibleWrong):blank;
+ let options=shuffle(unique([answer,...wrongs])).slice(0,4);
+ if(!options.some(x=>norm(x)===norm(answer)))options[0]=answer;
+ return {
+   id:`PRESENT_SIMPLE_FUTURE_${String(i+1).padStart(3,'0')}`,
+   block:'future',topic:'present_simple_future',grammar:'Present Simple for future',
+   theme,difficulty:difficultyFor(i),question_type:type,
+   sentence,base,answers:[answer],main:[answer,base],
+   why:'This is a timetable or fixed schedule. Use Present Simple for future events on a timetable.',
+   forms:`${base} → scheduled form: ${answer}`,
+   options:shuffle(options),word_order:[answer],original_blank:blank
+ };
+}
+
+const GENERATED_TOPICS=[
+ 'present_simple','present_continuous',
+ 'present_perfect','present_perfect_continuous',
+ 'past_simple','past_continuous',
+ 'past_perfect','past_perfect_continuous',
+ 'going_to_future','will_future','present_continuous_future'
+];
+
+const QUESTIONS=[
+ ...GENERATED_TOPICS.flatMap(topic=>ACTIONS.map((a,i)=>makeQuestion(topic,a,i))),
+ ...SCHEDULE_ITEMS.map((r,i)=>makeScheduleQuestion(r,i))
+];
+
+
+
+function norm(s){
+ return (s||'').trim().toLowerCase()
+  .replace(/[’]/g,"'")
+  .replace(/\s+/g,' ');
+}
+function shuffle(a){
+ a=[...a];
+ for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}
+ return a;
+}
+function esc(v){const d=document.createElement('div');d.textContent=v??'';return d.innerHTML}
+function showOnly(id){
+ ['login','studentHome','lesson','quiz','results','admin'].forEach(x=>document.getElementById(x).classList.add('hidden'));
+ document.getElementById(id).classList.remove('hidden');
+}
+
+window.chooseProfile=(p)=>{
+ selectedProfile=p;
+ document.querySelectorAll('#profileChoices .profileChoice').forEach(el=>{
+   el.classList.toggle('selected',el.dataset.login===p);
+ });
+ document.getElementById('loginMessage').classList.add('hidden');
+};
+
+
+async function loadLoginProfiles(){
+ const loading=document.getElementById('profileLoading');
+ const host=document.getElementById('profileChoices');
+ const manual=document.getElementById('manualProfileBox');
+
+ const {data,error}=await supabase.rpc('get_login_profiles');
+ if(error || !data?.length){
+   loading.classList.add('hidden');
+   manual.classList.remove('hidden');
+   host.innerHTML='<div class="msg err">Could not load the profile list. You can still enter the profile login manually.</div>';
+   return;
+ }
+
+ loginProfiles=data;
+ loading.classList.add('hidden');
+ manual.classList.add('hidden');
+
+ // Students first, admin last; TEST gets a distinct icon.
+ const sorted=[...data].sort((a,b)=>{
+   if(a.role!==b.role) return a.role==='student'?-1:1;
+   if(a.display_name==='TEST') return 1;
+   if(b.display_name==='TEST') return -1;
+   return a.display_name.localeCompare(b.display_name);
+ });
+
+ host.innerHTML=sorted.map((p,i)=>{
+   const icon=p.role==='admin'?'📊':p.display_name==='TEST'?'🧪':'👦';
+   const sub=p.role==='admin'?'Admin':p.display_name==='TEST'?'Student · test account':'Student';
+   return `<div class="profileChoice ${i===0?'selected':''}" data-login="${esc(p.login_key)}" onclick="chooseProfile('${esc(p.login_key)}')">
+     <strong>${icon} ${esc(p.display_name)}</strong><div class="small">${sub}</div>
+   </div>`;
+ }).join('');
+
+ selectedProfile=sorted[0]?.login_key||null;
+}
+
+function loginMsg(text){
+ const e=document.getElementById('loginMessage');
+ e.textContent=text;e.classList.remove('hidden');
+}
+
+window.login=async()=>{
+ const password=document.getElementById('password').value;
+ let loginKey=selectedProfile;
+ if(!loginKey){
+   loginKey=(document.getElementById('manualProfile')?.value||'').trim().toLowerCase();
+ }
+ if(!loginKey)return loginMsg('Choose a profile or enter the profile login.');
+ if(!password)return loginMsg('Enter the password.');
+ const btn=document.getElementById('loginBtn');btn.disabled=true;btn.textContent='SIGNING IN...';
+ const {data,error}=await supabase.auth.signInWithPassword({email:loginKey+'@grammar.local',password});
+ if(error){loginMsg('Sign-in failed: '+error.message);btn.disabled=false;btn.textContent='SIGN IN';return}
+ const {data:profile,error:pe}=await supabase.from('profiles').select('display_name,role').eq('id',data.user.id).single();
+ if(pe||!profile){
+   await supabase.auth.signOut({scope:'local'});loginMsg('Profile could not be loaded.');
+ }else{
+   const listed=loginProfiles.find(x=>x.login_key===loginKey);
+   if(listed && listed.role!==profile.role){
+     await supabase.auth.signOut({scope:'local'});
+     loginMsg('Profile role mismatch.');
+     btn.disabled=false;btn.textContent='SIGN IN';return;
+   }
+   currentUser=data.user;currentProfile=profile;
+   document.getElementById('password').value='';
+   if(profile.role==='student'){document.getElementById('studentName').textContent=profile.display_name;showOnly('studentHome');await loadStudentHome()}
+   else{adminStudents=[];adminStudentId=null;showOnly('admin');await refreshAdmin()}
+ }
+ btn.disabled=false;btn.textContent='SIGN IN';
+};
+
+window.logout=async()=>{
+ await supabase.auth.signOut({scope:'local'});currentUser=null;currentProfile=null;adminStudents=[];adminStudentId=null;showOnly('login');await loadLoginProfiles();
+};
+
+
+function scoreAnswer(a){
+ return ((a.grammar_recognition_correct===true?1:0)+(a.construction_correct===true?1:0))/2;
+}
+function weightedMetric(rows,key){
+ if(!rows.length)return null;
+ let num=0,den=0;
+ rows.slice(0,20).forEach((a,i)=>{
+   const w=i<5?10:i<10?6:2;
+   const v=key==='combined'?scoreAnswer(a):(a[key]===true?1:0);
+   num+=v*w;den+=w;
+ });
+ return den?Math.round(num/den*100):null;
+}
+function simpleAverage(rows){
+ if(!rows.length)return null;
+ return Math.round(rows.reduce((s,a)=>s+scoreAnswer(a),0)/rows.length*100);
+}
+function masteryLabel(score){
+ if(score===null||score===undefined)return {label:'Not started',cls:'gray'};
+ if(score<50)return {label:'Learning',cls:'red'};
+ if(score<70)return {label:'Developing',cls:'amber'};
+ if(score<85)return {label:'Getting strong',cls:'amber'};
+ if(score<95)return {label:'Strong',cls:'green'};
+ return {label:'Mastered',cls:'green'};
+}
+function trendInfo(rows){
+ if(rows.length<6)return {text:'',cls:'trendFlat'};
+ const recent=simpleAverage(rows.slice(0,5));
+ const previous=simpleAverage(rows.slice(5,10));
+ const d=recent-previous;
+ if(d>=8)return {text:'↑ improving',cls:'trendUp'};
+ if(d<=-8)return {text:'↓ needs a refresh',cls:'trendDown'};
+ return {text:'→ stable',cls:'trendFlat'};
+}
+function buildMastery(answers){
+ const grouped={};
+ answers.forEach(a=>{
+   if(!a.topic_code)return;
+   (grouped[a.topic_code]??=[]).push(a);
+ });
+ const result={};
+ Object.entries(grouped).forEach(([topic,rows])=>{
+   const current=weightedMetric(rows,'combined');
+   const recognition=weightedMetric(rows,'grammar_recognition_correct');
+   const construction=weightedMetric(rows,'construction_correct');
+   const trend=trendInfo(rows);
+   const last=simpleAverage(rows.slice(0,Math.min(5,rows.length)));
+   const bySession={};
+   rows.forEach(a=>{
+     if(a.session_id==null)return;
+     (bySession[a.session_id]??=[]).push(a);
+   });
+   const sessionScores=Object.values(bySession).map(simpleAverage).filter(x=>x!==null);
+   result[topic]={
+     current,recognition,construction,last,
+     best:sessionScores.length?Math.max(...sessionScores):last,
+     trend:trend.text,trendCls:trend.cls,
+     attempts:rows.length
+   };
+ });
+ return result;
+}
+function buildCooldown(answers){
+ const map={};
+ answers.forEach(a=>{
+   if(!a.question_id||!a.topic_code)return;
+   map[a.topic_code]??=[];
+   if(!map[a.topic_code].includes(a.question_id) && map[a.topic_code].length<18){
+     map[a.topic_code].push(a.question_id);
+   }
+ });
+ return Object.fromEntries(Object.entries(map).map(([k,v])=>[k,new Set(v)]));
+}
+function blockMastery(blockCode){
+ const vals=BLOCKS[blockCode].topics.map(t=>masteryByTopic[t]?.current).filter(v=>v!==null&&v!==undefined);
+ if(!vals.length)return null;
+ return Math.round(vals.reduce((a,b)=>a+b,0)/vals.length);
+}
+function topicMasteryChips(blockCode){
+ return BLOCKS[blockCode].topics.map(t=>{
+   const m=masteryByTopic[t],score=m?.current??null,meta=masteryLabel(score);
+   const trend=m?.trend?` · ${m.trend}`:'';
+   return `<span class="masteryChip">${esc(TOPIC_NAMES[t])}: ${score===null?'new':score+'%'} · ${esc(meta.label)}${esc(trend)}</span>`;
+ }).join('');
+}
+
+async function loadStudentHome(){
+ if(!currentUser){const {data:{user}}=await supabase.auth.getUser();currentUser=user}
+ const [pRes,aRes]=await Promise.all([
+   supabase.from('topic_progress').select('*').eq('student_id',currentUser.id),
+   supabase.from('answers')
+     .select('session_id,topic_code,question_id,grammar_recognition_correct,construction_correct,created_at')
+     .eq('student_id',currentUser.id)
+     .order('created_at',{ascending:false})
+     .limit(700)
+ ]);
+ lastProgress=pRes.error?[]:(pRes.data||[]);
+ recentAnswers=aRes.error?[]:(aRes.data||[]);
+ masteryByTopic=buildMastery(recentAnswers);
+ recentQuestionCooldown=buildCooldown(recentAnswers);
+ renderCourse();
+}
+
+function blockStats(blockCode){
+ const score=blockMastery(blockCode);
+ if(score===null)return {score:null,status:'not_started'};
+ return {score,status:score>=85?'secure':score>=60?'practice':'needs_work'};
+}
+function statusMeta(status){
+ return status==='secure'?['Strong','green']:status==='practice'?['Developing','amber']:status==='needs_work'?['Learning','red']:['Not started','gray'];
+}
+function renderCourse(){
+ const codes=['present','perfect','past','pastperfect','future'];
+ const practiced=Object.values(masteryByTopic).map(x=>x.current).filter(x=>x!==null&&x!==undefined);
+ const overall=practiced.length?Math.round(practiced.reduce((a,b)=>a+b,0)/practiced.length):null;
+
+ const html=codes.map((code,idx)=>{
+   const st=blockStats(code),meta=masteryLabel(st.score);
+   return `<div class="courseItem" onclick="openLesson('${code}')">
+     <div class="missionNode">
+       <div class="missionNum">${idx+1}</div>
+       <div class="missionMeta">
+         <div class="missionTag">Mission ${idx+1}</div>
+         <strong>${esc(BLOCKS[code].name.replace(/^\d+\.\s*/,''))}</strong>
+         <div class="small">${esc(BLOCKS[code].desc)}</div>
+       </div>
+       <span class="status ${meta.cls}">${st.score===null?'New':st.score+'% · '+meta.label}</span>
+     </div>
+     <div class="masteryLine">${topicMasteryChips(code)}</div>
+     ${st.score===null?'':`<div class="bar"><div class="fill" style="width:${st.score}%"></div></div>`}
+   </div>`;
+ }).join('');
+
+ document.getElementById('courseList').innerHTML=html;
+ document.getElementById('studentOverall').textContent=overall===null?'No mastery yet':overall+'% current mastery';
+
+ const candidates=codes.map(code=>{
+   const score=blockMastery(code);
+   const attempts=BLOCKS[code].topics.reduce((s,t)=>s+(masteryByTopic[t]?.attempts||0),0);
+   return {code,score,attempts};
+ });
+ const unstarted=candidates.find(x=>x.score===null);
+ if(unstarted)recommendedBlock=unstarted.code;
+ else{
+   candidates.forEach(x=>x.priority=(100-x.score)+Math.max(0,12-x.attempts)*2);
+   recommendedBlock=candidates.sort((a,b)=>b.priority-a.priority)[0].code;
+ }
+ const rs=blockStats(recommendedBlock);
+ const rm=masteryLabel(rs.score);
+ document.getElementById('recommendedBtn').textContent=
+   'NEXT MISSION: '+BLOCKS[recommendedBlock].name.replace(/^\d+\.\s*/,'').toUpperCase();
+ document.getElementById('missionBriefText').textContent=
+   `${BLOCKS[recommendedBlock].name} · ${rs.score===null?'new topic':rs.score+'% '+rm.label} · fresh questions + Boss Challenge`;
+}
+window.startRecommended=()=>startBlock(recommendedBlock);
+
+function grammarOptions(blockCode){
+ if(blockCode==='present')return ['Present Simple','Present Continuous'];
+ if(blockCode==='perfect')return ['Present Perfect','Present Perfect Continuous'];
+ if(blockCode==='past')return ['Past Simple','Past Continuous'];
+ if(blockCode==='pastperfect')return ['Past Perfect','Past Perfect Continuous'];
+ if(blockCode==='future')return ['going to-future','will-future','Present Continuous for future','Present Simple for future'];
+ return shuffle([
+  'Present Simple','Present Continuous','Present Perfect','Present Perfect Continuous',
+  'Past Simple','Past Continuous','Past Perfect','Past Perfect Continuous',
+  'going to-future','will-future','Present Continuous for future','Present Simple for future'
+ ]);
+}
+
+
+
+async function getPreviousBest(code){
+ if(!currentUser || isMistakePractice || isWeakMission)return null;
+ const {data,error}=await supabase.from('training_sessions')
+   .select('total_questions,tense_correct,construction_correct')
+   .eq('student_id',currentUser.id)
+   .eq('block_code',code)
+   .limit(50);
+ if(error || !data?.length)return null;
+ return Math.max(...data.map(s=>{
+   const n=Number(s.total_questions||0);
+   return n?Math.round((Number(s.tense_correct||0)+Number(s.construction_correct||0))/(n*2)*100):0;
+ }));
+}
+
+function chooseActiveTheme(){
+ if(currentTheme!=='random')return currentTheme;
+ const keys=Object.keys(THEMES);
+ return keys[Math.floor(Math.random()*keys.length)];
+}
+
+function applyCooldown(pool){
+ const fresh=pool.filter(q=>!(recentQuestionCooldown[q.topic]?.has(q.id)));
+ return fresh.length>=7?fresh:pool;
+}
+
+function themePool(pool,theme){
+ const themed=pool.filter(q=>q.theme===theme);
+ return themed.length>=5?themed:pool;
+}
+
+function adaptivePick(pool,count){
+ const bag=[];
+ pool.forEach(q=>{
+   const mastery=masteryByTopic[q.topic]?.current;
+   let copies=mastery===undefined?3:mastery<50?6:mastery<70?5:mastery<85?3:2;
+   if(mastery!==undefined){
+     if(mastery<55 && q.difficulty===1)copies+=3;
+     if(mastery>=85 && q.difficulty===3)copies+=3;
+     if(mastery>=70 && mastery<85 && q.difficulty===2)copies+=2;
+   }
+   for(let i=0;i<copies;i++)bag.push(q);
+ });
+ const chosen=[],types=new Set();
+ // First pass favors variety of question types.
+ for(const q of shuffle(bag)){
+   if(chosen.some(x=>x.id===q.id))continue;
+   if(!types.has(q.question_type) || chosen.length>=4){
+     chosen.push(q);types.add(q.question_type);
+   }
+   if(chosen.length>=count)break;
+ }
+ for(const q of shuffle(pool)){
+   if(chosen.length>=count)break;
+   if(!chosen.some(x=>x.id===q.id))chosen.push(q);
+ }
+ return chosen;
+}
+
+
+function makeBossQuestion(q){
+ if(q.question_type==='error_correction')return {...q,_stage:'boss'};
+ const wrong=(q.options||[]).find(x=>!q.answers.some(a=>norm(a)===norm(x))) || q.base;
+ const sentence=(q.original_blank||q.sentence).includes('___')
+   ? (q.original_blank||q.sentence).replace('___',wrong)
+   : q.sentence;
+ return {...q,question_type:'error_correction',sentence,_stage:'boss'};
+}
+
+function buildMissionQueue(pool,adaptive=false){
+ activeMissionTheme=chooseActiveTheme();
+ let available=themePool(pool,activeMissionTheme);
+ available=applyCooldown(available);
+
+ const corePool=available.filter(q=>q.question_type!=='error_correction' || q.difficulty<3);
+ const bossPool=available.filter(q=>q.question_type==='error_correction' && q.difficulty===3);
+
+ let core=adaptive?adaptivePick(corePool,5):shuffle(corePool).slice(0,5);
+ if(core.length<5){
+   for(const q of shuffle(available)){
+     if(core.length>=5)break;
+     if(!core.some(x=>x.id===q.id))core.push(q);
+   }
+ }
+ let bosses=adaptive?adaptivePick(bossPool,2):shuffle(bossPool).slice(0,2);
+ if(bosses.length<2){
+   const hard=available.filter(q=>q.difficulty>=2&&!core.some(c=>c.id===q.id));
+   for(const q of shuffle(hard)){
+     if(bosses.length>=2)break;
+     if(!bosses.some(x=>x.id===q.id))bosses.push(makeBossQuestion(q));
+   }
+ }
+ const selected=[
+   ...core.map(q=>({...q,_stage:'mission'})),
+   ...bosses.map(q=>makeBossQuestion(q))
+ ];
+ missionBaseQuestions=selected.length;
+ return selected;
+}
+
+function findRepairQuestion(q){
+ const used=new Set(currentQueue.map(x=>x.id));
+ let candidates=QUESTIONS.filter(x=>
+   x.topic===q.topic &&
+   x.id!==q.id &&
+   !used.has(x.id) &&
+   !recentQuestionCooldown[x.topic]?.has(x.id)
+ );
+ const themed=candidates.filter(x=>x.theme===activeMissionTheme);
+ if(themed.length)candidates=themed;
+ if(!candidates.length)return null;
+ const repair=adaptivePick(candidates,1)[0]||shuffle(candidates)[0];
+ return repair?{...repair,_stage:'repair'}:null;
+}
+
+
+window.openLesson=(code)=>{
+ currentLesson=code;
+ const L=LESSONS[code];
+ document.getElementById('lessonNumber').textContent=BLOCKS[code].name;
+ document.getElementById('lessonTitle').textContent=L.title;
+ document.getElementById('lessonIntro').textContent=L.intro;
+ document.getElementById('lessonGoal').textContent=L.goal;
+ const masteryRows=BLOCKS[code].topics.map(t=>{
+   const m=masteryByTopic[t],score=m?.current??null,meta=masteryLabel(score);
+   if(score===null)return '';
+   return `<div class="masteryHero"><strong>${esc(TOPIC_NAMES[t])}</strong>
+     <div class="big">${score}% · ${esc(meta.label)}</div>
+     <div class="small">Recognition ${m.recognition}% · Construction ${m.construction}% · Last ${m.last}% · Best ${m.best}% <span class="${m.trendCls}">${esc(m.trend)}</span></div>
+   </div>`;
+ }).join('');
+ document.getElementById('lessonContent').innerHTML=L.points.map(([h,b])=>
+   `<div class="item"><strong>${esc(h)}</strong><div class="small">${esc(b)}</div></div>`
+ ).join('')+masteryRows;
+ document.getElementById('themeSelect').value=currentTheme;
+ showOnly('lesson');
+};
+
+window.openRecommendedLesson=()=>openLesson(recommendedBlock);
+
+window.startLessonTraining=()=>startBlock(currentLesson,false);
+
+window.startAdaptiveFromLesson=()=>startBlock(currentLesson,true);
+
+window.startBlock=async(code,adaptive=false)=>{
+ currentBlock=code;
+ questionIndex=0;
+ sessionAnswers=[];
+ sessionStartedAt=new Date();
+ isMistakePractice=false;
+ isWeakMission=false;
+ missionCombo=0;
+ missionBestCombo=0;
+ remediationCount=0;
+
+ let pool=code==='mixed'?QUESTIONS:QUESTIONS.filter(q=>q.block===code);
+ previousBest=await getPreviousBest(code);
+ currentQueue=buildMissionQueue(pool,adaptive);
+
+ showOnly('quiz');
+ renderQuestion();
+};
+
+
+window.startWeakTopics=async()=>{
+ if(!currentUser)return;
+ const weak=Object.entries(masteryByTopic)
+   .sort((a,b)=>(a[1].current??100)-(b[1].current??100))
+   .slice(0,4)
+   .map(([topic])=>topic);
+ if(!weak.length){
+   alert('No weak topics yet. Complete at least one mission first.');
+   return;
+ }
+ const pool=QUESTIONS.filter(q=>weak.includes(q.topic));
+ currentBlock='mixed';currentLesson='mixed';questionIndex=0;sessionAnswers=[];sessionStartedAt=new Date();
+ isMistakePractice=false;isWeakMission=true;missionCombo=0;missionBestCombo=0;remediationCount=0;previousBest=null;
+ currentQueue=buildMissionQueue(pool,true);
+ showOnly('quiz');renderQuestion();
+};
+
+function renderQuestion(){
+ const q=currentQueue[questionIndex];
+ selectedGrammar='';selectedVerbAnswer='';
+ const stage=q._stage||'mission';
+
+ document.getElementById('quizBlock').textContent=
+   `${isWeakMission?'Weak Spot Mission':isMistakePractice?'Mistake Repair':BLOCKS[currentBlock].name} · ${THEMES[activeMissionTheme]?.icon||''} ${THEMES[activeMissionTheme]?.label||'Mixed'}`;
+ document.getElementById('quizProgress').textContent=`${questionIndex+1} / ${currentQueue.length}`;
+
+ const typeNames={
+   fill_form:'Fill the form',
+   multiple_choice:'Choose the form',
+   word_order:'Build the form',
+   error_correction:'Fix the mistake'
+ };
+ document.getElementById('questionTypeBadge').textContent=typeNames[q.question_type]||'Grammar challenge';
+ document.getElementById('quizSentence').textContent=q.sentence;
+ document.getElementById('quizBase').textContent=q.base;
+ document.getElementById('verbHint').classList.toggle('hidden',q.question_type==='error_correction');
+
+ const input=document.getElementById('quizAnswer');
+ const vchoices=document.getElementById('verbChoices');
+ const tray=document.getElementById('wordTray');
+ input.value='';input.disabled=false;input.classList.remove('hidden');
+ vchoices.innerHTML='';vchoices.classList.add('hidden');
+ tray.classList.add('hidden');tray.textContent='';
+
+ if(q.question_type==='multiple_choice'){
+   document.getElementById('answerLabel').textContent='2. Choose the complete verb form';
+   input.classList.add('hidden');
+   vchoices.classList.remove('hidden');
+   q.options.forEach(opt=>{
+     const b=document.createElement('button');
+     b.className='choice';b.textContent=opt;
+     b.onclick=()=>{
+       selectedVerbAnswer=opt;
+       vchoices.querySelectorAll('.choice').forEach(x=>x.classList.remove('selected'));
+       b.classList.add('selected');
+     };
+     vchoices.appendChild(b);
+   });
+ }else if(q.question_type==='error_correction'){
+   document.getElementById('answerLabel').textContent='2. Correct the wrong verb phrase';
+   input.placeholder='Type only the corrected verb phrase';
+ }else if(q.question_type==='word_order'){
+   document.getElementById('answerLabel').textContent='2. Put the words in the correct order';
+   tray.classList.remove('hidden');
+   tray.textContent='Words: '+q.word_order.join(' · ');
+   input.placeholder='Type the complete verb phrase';
+ }else{
+   document.getElementById('answerLabel').textContent='2. Complete the sentence';
+   input.placeholder='Type the complete verb form';
+ }
+
+ document.getElementById('feedback').classList.add('hidden');
+ document.getElementById('feedback').innerHTML='';
+ document.getElementById('checkBtn').classList.remove('hidden');
+ document.getElementById('nextBtn').classList.add('hidden');
+
+ const stageEl=document.getElementById('quizStage');
+ const banner=document.getElementById('stageBanner');
+ stageEl.className='hudBox '+(stage==='boss'?'stageBoss':stage==='repair'?'stageRepair':'stageNormal');
+ stageEl.textContent=stage==='boss'?'BOSS':stage==='repair'?'REPAIR':'MISSION';
+ banner.className='hidden';banner.innerHTML='';
+ if(stage==='boss'){
+   banner.className='bossBanner';
+   banner.textContent='⚡ Boss Challenge — find the tense and fix a harder sentence.';
+ }else if(stage==='repair'){
+   banner.className='repairBanner';
+   banner.textContent='↻ Quick repair — same skill, different sentence.';
+ }
+ document.getElementById('comboBadge').textContent='Combo '+missionCombo;
+ document.getElementById('bestComboBadge').textContent='Best '+missionBestCombo;
+
+ const opts=currentBlock==='mixed'
+   ? shuffle([q.grammar,...shuffle(grammarOptions('mixed').filter(x=>x!==q.grammar)).slice(0,4)])
+   : grammarOptions(q.block||currentBlock);
+ const host=document.getElementById('quizChoices');host.innerHTML='';
+ opts.forEach(c=>{
+   const b=document.createElement('button');b.className='choice';b.textContent=c;
+   b.onclick=()=>{
+     selectedGrammar=c;
+     host.querySelectorAll('.choice').forEach(x=>x.classList.remove('selected'));
+     b.classList.add('selected');
+   };
+   host.appendChild(b);
+ });
+ if(q.question_type!=='multiple_choice')setTimeout(()=>input.focus(),50);
+}
+
+function mainFormCorrect(input,q){
+ if(q.answers.some(a=>norm(a)===norm(input)))return true;
+ const words=norm(input).split(' ');
+ return (q.main||[]).some(m=>words.includes(norm(m)) || norm(input)===norm(m));
+}
+
+
+function classifyError(q,input,grammarOK,verbOK,constructionOK){
+ if(grammarOK && constructionOK) return null;
+ const a=norm(input), correct=norm(q.answers[0]);
+
+ if(!grammarOK) return 'Tense/form recognition';
+
+ if(q.grammar==='Present Simple'){
+   if(/\b(he|she|it|brother|mother|father|tom|max|baby)\b/i.test(q.sentence) && !a.endsWith('s'))
+     return '3rd person -s';
+ }
+ if(q.grammar==='Present Continuous' || q.grammar==='Present Continuous for future'){
+   if(!/\b(am|is|are)\b/.test(a)) return 'Missing am/is/are';
+   if(!/ing\b/.test(a)) return 'Wrong -ing form';
+ }
+ if(q.grammar==='Past Continuous'){
+   if(!/\b(was|were)\b/.test(a)) return 'Missing was/were';
+   if(!/ing\b/.test(a)) return 'Wrong -ing form';
+ }
+ if(q.grammar==='Present Perfect'){
+   if(!/\b(have|has|haven't|hasn't)\b/.test(a)) return 'Missing/wrong have/has';
+   if(!verbOK) return 'Wrong V3 / irregular verb';
+ }
+ if(q.grammar==='Present Perfect Continuous'){
+   if(!/\b(have|has)\b/.test(a) || !/\bbeen\b/.test(a)) return 'Missing have/has been';
+   if(!/ing\b/.test(a)) return 'Wrong -ing form';
+ }
+ if(q.grammar==='Past Perfect'){
+   if(!/\bhad\b/.test(a)) return 'Missing had';
+   if(!verbOK) return 'Wrong V3 / irregular verb';
+ }
+ if(q.grammar==='Past Perfect Continuous'){
+   if(!/\bhad\b/.test(a) || !/\bbeen\b/.test(a)) return 'Missing had been';
+   if(!/ing\b/.test(a)) return 'Wrong -ing form';
+ }
+ if(q.grammar==='Past Simple' && !verbOK) return 'Wrong V2 / irregular verb';
+ if(q.grammar==='going to-future'){
+   if(!/\b(am|is|are)\b/.test(a) || !/\bgoing to\b/.test(a)) return 'Wrong going to construction';
+ }
+ if(q.grammar==='will-future' && !/\bwill\b/.test(a)) return 'Missing will';
+ if(q.grammar==='Present Simple for future' && !constructionOK) return 'Timetable form / 3rd person -s';
+ if(!verbOK) return 'Wrong verb form';
+ return 'Sentence construction';
+}
+
+window.checkAnswer=()=>{
+ if(!selectedGrammar){alert('First choose the tense / form.');return}
+ const q=currentQueue[questionIndex];
+ const input=q.question_type==='multiple_choice'
+   ? selectedVerbAnswer
+   : document.getElementById('quizAnswer').value;
+ if(!input){alert(q.question_type==='multiple_choice'?'Choose the verb form.':'Enter the verb form.');return}
+
+ const grammarOK=selectedGrammar===q.grammar;
+ const constructionOK=q.answers.some(a=>norm(a)===norm(input));
+ const verbOK=mainFormCorrect(input,q);
+ const errorType=classifyError(q,input,grammarOK,verbOK,constructionOK);
+
+ sessionAnswers.push({q,selectedGrammar,input,grammarOK,verbOK,constructionOK,errorType});
+
+ const fullyCorrect=grammarOK&&constructionOK;
+ if(fullyCorrect){
+   missionCombo++;missionBestCombo=Math.max(missionBestCombo,missionCombo);
+ }else missionCombo=0;
+ document.getElementById('comboBadge').textContent='Combo '+missionCombo;
+ document.getElementById('bestComboBadge').textContent='Best '+missionBestCombo;
+
+ let repairAdded=false;
+ if(!fullyCorrect && !isMistakePractice && remediationCount<2){
+   const repair=findRepairQuestion(q);
+   if(repair){
+     currentQueue.splice(questionIndex+1,0,repair);
+     remediationCount++;repairAdded=true;
+   }
+ }
+
+ let headline;
+ if(grammarOK&&constructionOK)headline='<span class="good">✅ Tense correct · Sentence form correct</span>';
+ else if(grammarOK)headline='<span class="warn">🟡 Tense correct · Sentence form wrong</span>';
+ else if(constructionOK)headline='<span class="warn">🟡 Sentence form correct · Tense choice wrong</span>';
+ else headline='<span class="bad">❌ Tense wrong · Sentence form wrong</span>';
+
+ document.getElementById('feedback').innerHTML=`
+   ${headline}
+   <div style="margin-top:10px"><strong>Correct tense/form:</strong> ${esc(q.grammar)}<br>
+   <strong>Correct answer:</strong> ${esc(q.answers[0])}</div>
+   <div class="explain"><strong>Why?</strong><br>${esc(q.why)}<br><br><strong>Verb:</strong> ${esc(q.forms)}
+   ${errorType?`<br><br><strong>What to practice:</strong> ${esc(errorType)}`:''}
+   ${repairAdded?`<br><br><strong>Next:</strong> a different sentence testing the same skill will appear.`:''}</div>
+ `;
+ document.getElementById('feedback').classList.remove('hidden');
+ document.getElementById('quizAnswer').disabled=true;
+ document.getElementById('checkBtn').classList.add('hidden');
+ document.getElementById('nextBtn').classList.remove('hidden');
+ document.querySelectorAll('#quizChoices .choice,#verbChoices .choice').forEach(b=>b.disabled=true);
+};
+
+window.nextQuestion=()=>{
+ questionIndex++;
+ if(questionIndex>=currentQueue.length)finishTraining();
+ else renderQuestion();
+};
+
+window.confirmQuit=()=>{
+ if(confirm('Leave this training? Unsaved answers from this session will be lost.')){
+   showOnly('studentHome');loadStudentHome();
+ }
+};
+
+async function finishTraining(){
+ showOnly('results');
+ const n=sessionAnswers.length;
+ const grammar=sessionAnswers.filter(x=>x.grammarOK).length;
+ const construction=sessionAnswers.filter(x=>x.constructionOK).length;
+ document.getElementById('resultScore').textContent=`${grammar+construction} / ${n*2}`;
+ document.getElementById('resultGrammar').textContent=Math.round(grammar/n*100)+'%';
+ document.getElementById('resultConstruction').textContent=Math.round(construction/n*100)+'%';
+
+ const missionPct=Math.round((grammar+construction)/(n*2)*100);
+ let msg='';
+ if(missionPct===100) msg='Perfect mission — every tense choice and sentence form was correct.';
+ else if(missionPct>=85) msg='Mission complete — this grammar block is getting stronger.';
+ else if(missionPct>=65) msg='Mission complete — good progress. The weak spots are shown below.';
+ else msg='Mission complete — use Fix These Mistakes before moving on.';
+ document.getElementById('resultMissionMessage').innerHTML=`<strong>${esc(msg)}</strong>`;
+
+ if(previousBest===null){
+   document.getElementById('resultBest').textContent=isWeakMission||isMistakePractice?'Focused practice completed.':'First recorded mission in this block.';
+ }else if(missionPct>previousBest){
+   document.getElementById('resultBest').textContent=`New personal best: ${missionPct}% · previous ${previousBest}%`;
+ }else{
+   document.getElementById('resultBest').textContent=`Personal best: ${previousBest}% · this mission ${missionPct}%`;
+ }
+ document.getElementById('resultCombo').textContent=`Best combo this mission: ${missionBestCombo}`;
+
+ const grouped={};
+ sessionAnswers.forEach(x=>{
+   grouped[x.q.topic]=grouped[x.q.topic]||{n:0,ok:0};
+   grouped[x.q.topic].n++;
+   if(x.grammarOK&&x.constructionOK)grouped[x.q.topic].ok++;
+ });
+ const errorCounts={};
+ sessionAnswers.filter(x=>!x.grammarOK||!x.constructionOK).forEach(x=>{
+   const k=x.errorType||'Other';
+   errorCounts[k]=(errorCounts[k]||0)+1;
+ });
+ const topicHtml=Object.entries(grouped).map(([code,s])=>
+   `<span class="pill">${esc(TOPIC_NAMES[code])}: ${s.ok}/${s.n}</span>`
+ ).join('');
+ const errorHtml=Object.entries(errorCounts).sort((a,b)=>b[1]-a[1]).map(([k,v])=>
+   `<span class="pill">${esc(k)}: ${v}</span>`
+ ).join('');
+ document.getElementById('resultTopics').innerHTML=topicHtml+(errorHtml?`<div style="margin-top:12px"><strong>Errors to practice</strong><br>${errorHtml}</div>`:'');
+
+ practiceSource=sessionAnswers.filter(x=>!x.grammarOK||!x.constructionOK).map(x=>x.q);
+ const pm=document.getElementById('practiceMistakesBtn');
+ pm.classList.toggle('hidden',practiceSource.length===0);
+
+ document.getElementById('saveState').textContent='Saving to cloud…';
+ document.getElementById('saveState').className='muted';
+ try{
+   await saveTraining();
+   document.getElementById('saveState').textContent='✓ Progress saved to cloud';
+   document.getElementById('saveState').className='good';
+ }catch(e){
+   console.error(e);
+   document.getElementById('saveState').textContent='Could not save: '+e.message;
+   document.getElementById('saveState').className='bad';
+ }
+}
+
+async function saveTraining(){
+ if(!currentUser)throw new Error('No signed-in student');
+ if(!sessionAnswers.length)throw new Error('No answers to save');
+
+ const answerRows=sessionAnswers.map(x=>({
+  question_id:x.q.id,
+  question_type:x.q.question_type,
+  mission_stage:x.q._stage||'mission',
+  mission_theme:x.q.theme||activeMissionTheme,
+  difficulty:x.q.difficulty||2,
+  topic_code:x.q.topic,
+  topic_name:TOPIC_NAMES[x.q.topic],
+  question_text:x.q.sentence,
+  selected_grammar:x.selectedGrammar,
+  expected_grammar:x.q.grammar,
+  student_answer:x.input,
+  correct_answer:x.q.answers[0],
+  grammar_recognition_correct:x.grammarOK,
+  verb_form_correct:x.verbOK,
+  construction_correct:x.constructionOK
+ }));
+
+ const blockCode=isMistakePractice?'mistakes_'+currentBlock:isWeakMission?'weak_topics':currentBlock;
+ const blockName=isMistakePractice?'Fix mistakes · '+BLOCKS[currentBlock].name:isWeakMission?'Weak Spot Mission':'Mission · '+BLOCKS[currentBlock].name;
+ const missionMode=isMistakePractice?'mistake_repair':isWeakMission?'weak_spot':'adaptive_mission';
+
+ const {data,error}=await supabase.rpc('save_training_result_v10',{
+   p_block_code:blockCode,
+   p_block_name:blockName,
+   p_started_at:sessionStartedAt.toISOString(),
+   p_completed_at:new Date().toISOString(),
+   p_mission_theme:activeMissionTheme,
+   p_mission_mode:missionMode,
+   p_answers:answerRows
+ });
+ if(error)throw error;
+ return data;
+}
+
+window.practiceMistakes=()=>{
+ if(!practiceSource.length)return;
+ questionIndex=0;
+ sessionAnswers=[];
+ sessionStartedAt=new Date();
+ isMistakePractice=true;
+ isWeakMission=false;
+ missionCombo=0;
+ missionBestCombo=0;
+ remediationCount=0;
+ previousBest=null;
+ activeMissionTheme=currentTheme==='random'?'funny':currentTheme;
+ const seen=new Set();
+ currentQueue=shuffle(practiceSource).filter(q=>{if(seen.has(q.id))return false;seen.add(q.id);return true}).map(q=>({...q,_stage:'repair'}));
+ showOnly('quiz');
+ renderQuestion();
+};
+window.repeatTraining=()=>startBlock(currentBlock,true);
+window.backToCourse=async()=>{showOnly('studentHome');await loadStudentHome()};
+
+window.refreshAdmin=async()=>{
+ if(!adminStudents.length){
+   const {data:students,error:se}=await supabase.from('profiles').select('id,display_name').eq('role','student').order('display_name');
+   if(se||!students?.length){
+     document.getElementById('needsAttention').innerHTML='<div class="msg err">Could not load student profiles.</div>';return;
+   }
+   adminStudents=students;
+   const sel=document.getElementById('adminStudentSelect');
+   sel.innerHTML=students.map(s=>`<option value="${s.id}">${esc(s.display_name)}</option>`).join('');
+   if(!adminStudentId){
+     const preferred=students.find(s=>s.display_name==='Maxim')||students[0];
+     adminStudentId=preferred.id;
+     sel.value=adminStudentId;
+   }else{
+     sel.value=adminStudentId;
+   }
+ }
+ const student=adminStudents.find(s=>s.id===adminStudentId)||adminStudents[0];
+ adminStudentId=student.id;
+ document.getElementById('adminStudentSelect').value=adminStudentId;
+ document.getElementById('adminStudentTitle').textContent=student.display_name+' · Progress';
+ const id=adminStudentId;
+ const [sRes,pRes,aRes]=await Promise.all([
+  supabase.from('training_sessions').select('*').eq('student_id',id).order('completed_at',{ascending:false}).limit(50),
+  supabase.from('topic_progress').select('*').eq('student_id',id).order('score',{ascending:true}),
+  supabase.from('answers').select('session_id,topic_code,question_id,question_type,mission_stage,mission_theme,difficulty,grammar_recognition_correct,verb_form_correct,construction_correct,topic_name,expected_grammar,student_answer,correct_answer,question_text,created_at').eq('student_id',id).order('created_at',{ascending:false}).limit(700)
+ ]);
+ const sessions=sRes.data||[],progress=pRes.data||[],answers=aRes.data||[];
+ const adminMastery=buildMastery(answers);
+ document.getElementById('metricSessions').textContent=sessions.length;
+ document.getElementById('metricTopics').textContent=progress.filter(x=>x.attempts>0).length;
+ const pct=k=>{
+   const vals=answers.filter(x=>x[k]!==null);
+   return vals.length?Math.round(vals.filter(x=>x[k]===true).length/vals.length*100)+'%':'—';
+ };
+ document.getElementById('metricTense').textContent=pct('grammar_recognition_correct');
+ document.getElementById('metricVerb').textContent=pct('verb_form_correct');
+ document.getElementById('metricConstruction').textContent=pct('construction_correct');
+
+ const weak=Object.entries(adminMastery)
+   .filter(([_,m])=>m.current<70)
+   .sort((a,b)=>a[1].current-b[1].current)
+   .slice(0,6);
+ document.getElementById('needsAttention').innerHTML=weak.length
+   ? weak.map(([topic,m])=>`<div class="problem"><strong>${esc(TOPIC_NAMES[topic]||topic)}</strong><div class="small">Current mastery ${m.current}% · Recognition ${m.recognition}% · Construction ${m.construction}% ${m.trend?`· ${esc(m.trend)}`:''}</div></div>`).join('')
+   : '<div class="small">No weak current-mastery topics recorded yet.</div>';
+
+ const topicCodes=unique([...progress.map(x=>x.topic_code),...Object.keys(adminMastery)]);
+ document.getElementById('adminTopicsList').innerHTML=topicCodes.length
+   ? topicCodes.map(code=>{
+      const hist=progress.find(x=>x.topic_code===code);
+      const m=adminMastery[code];
+      const meta=masteryLabel(m?.current??null);
+      const allTime=hist?Math.round(Number(hist.score))+'%':'—';
+      return `<div class="item">
+        <div class="row"><div><strong>${esc(TOPIC_NAMES[code]||hist?.topic_name||code)}</strong>
+        <div class="small">Current: ${m?.current??'—'}% · ${esc(meta.label)} ${m?.trend?`· ${esc(m.trend)}`:''}</div>
+        <div class="small">Recognition ${m?.recognition??'—'}% · Construction ${m?.construction??'—'}% · Last ${m?.last??'—'}% · Best ${m?.best??'—'}%</div>
+        <div class="small">All-time: ${allTime}${hist?` · ${hist.correct}/${hist.attempts} fully correct`:''}</div></div>
+        <span class="status ${meta.cls}">${m?.current??'—'}%</span></div>
+      </div>`;
+     }).join('')
+   : '<div class="small">No topic data yet.</div>';
+
+
+ const classifyStored=(x)=>{
+   if(x.grammar_recognition_correct===false) return 'Tense/form recognition';
+   const a=norm(x.student_answer), g=x.expected_grammar||'';
+   if(g==='Present Continuous' || g==='Present Continuous for future'){
+     if(!/\b(am|is|are)\b/.test(a)) return 'Missing am/is/are';
+     if(!/ing\b/.test(a)) return 'Wrong -ing form';
+   }
+   if(g==='Past Continuous'){
+     if(!/\b(was|were)\b/.test(a)) return 'Missing was/were';
+     if(!/ing\b/.test(a)) return 'Wrong -ing form';
+   }
+   if(g==='Present Perfect'){
+     if(!/\b(have|has|haven't|hasn't)\b/.test(a)) return 'Missing/wrong have/has';
+     if(x.verb_form_correct===false) return 'Wrong V3 / irregular verb';
+   }
+   if(g==='Present Perfect Continuous'){
+     if(!/\b(have|has)\b/.test(a)||!/\bbeen\b/.test(a)) return 'Missing have/has been';
+   }
+   if(g==='Past Perfect'){
+     if(!/\bhad\b/.test(a)) return 'Missing had';
+     if(x.verb_form_correct===false) return 'Wrong V3 / irregular verb';
+   }
+   if(g==='Past Perfect Continuous'){
+     if(!/\bhad\b/.test(a)||!/\bbeen\b/.test(a)) return 'Missing had been';
+   }
+   if(g==='Past Simple' && x.verb_form_correct===false) return 'Wrong V2 / irregular verb';
+   if(g==='will-future' && !/\bwill\b/.test(a)) return 'Missing will';
+   if(g==='going to-future' && (!/\b(am|is|are)\b/.test(a)||!/\bgoing to\b/.test(a))) return 'Wrong going to construction';
+   if(x.verb_form_correct===false) return 'Wrong verb form';
+   return 'Sentence construction';
+ };
+ const mistakes=answers.filter(x=>x.grammar_recognition_correct===false||x.construction_correct===false);
+ const counts={};
+ mistakes.forEach(x=>{const k=classifyStored(x);counts[k]=(counts[k]||0)+1});
+ document.getElementById('adminErrorTypes').innerHTML=Object.keys(counts).length
+   ? Object.entries(counts).sort((a,b)=>b[1]-a[1]).map(([k,v])=>`<div class="item row"><span>${esc(k)}</span><strong>${v}</strong></div>`).join('')
+   : '<div class="small">No error data yet.</div>';
+
+ document.getElementById('adminRecentMistakes').innerHTML=mistakes.length
+   ? mistakes.slice(0,8).map(x=>`<div class="item"><strong>${esc(x.topic_name)}</strong><div>${esc(x.question_text)}</div><div class="small">Maxim: ${esc(x.student_answer||'—')} · Correct: ${esc(x.correct_answer)} · ${esc(classifyStored(x))}</div></div>`).join('')
+   : '<div class="small">No mistakes yet.</div>';
+
+ document.getElementById('adminActivityList').innerHTML=sessions.length
+   ? sessions.map(s=>{
+      const pctAll=Math.round((Number(s.tense_correct)+Number(s.construction_correct))/(Number(s.total_questions)*2)*100);
+      return `<div class="item"><div class="row"><strong>${esc(s.block_name)}</strong><span class="status gray">${pctAll}%</span></div>
+      <div class="small">${new Date(s.completed_at).toLocaleString()} · ${s.total_questions} questions · tense ${s.tense_correct}/${s.total_questions} · forms ${s.verb_form_correct}/${s.total_questions}</div></div>`;
+     }).join('')
+   : '<div class="small">No sessions yet.</div>';
+
+ document.getElementById('adminSync').textContent='Updated '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+};
+
+window.changeAdminStudent=async()=>{
+ const sel=document.getElementById('adminStudentSelect');
+ adminStudentId=sel.value;
+ await refreshAdmin();
+};
+
+window.adminTab=(name)=>{
+ [['Overview','overview'],['Topics','topics'],['Activity','activity']].forEach(([N,n])=>{
+  document.getElementById('admin'+N).classList.toggle('hidden',n!==name);
+  document.getElementById('tab'+N+'Btn').className=n===name?'active':'inactive';
+ });
+};
+
+document.getElementById('quizAnswer').addEventListener('keydown',e=>{
+ if(e.key==='Enter'){
+   if(!document.getElementById('checkBtn').classList.contains('hidden'))checkAnswer();
+   else if(!document.getElementById('nextBtn').classList.contains('hidden'))nextQuestion();
+ }
+});
+
+const {data:{session}}=await supabase.auth.getSession();
+if(session){
+ currentUser=session.user;
+ const {data:p}=await supabase.from('profiles').select('display_name,role').eq('id',session.user.id).single();
+ currentProfile=p;
+ if(p?.role==='student'){
+   document.getElementById('studentName').textContent=p.display_name;showOnly('studentHome');await loadStudentHome();
+ }else if(p?.role==='admin'){
+   adminStudents=[];adminStudentId=null;showOnly('admin');await refreshAdmin();
+ }
+}else{
+ await loadLoginProfiles();
+}
+</script>
+</body>
+</html>
