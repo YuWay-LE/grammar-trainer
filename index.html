@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f5f7fb">
-<title>Grammar Trainer v1.2.1</title>
+<title>Grammar Trainer v1.2.2 Test</title>
 <style>
 :root{
  --bg:#f5f7fb;--card:#fff;--text:#17191f;--muted:#687386;--line:#dfe3eb;
@@ -98,7 +98,7 @@ button:disabled{opacity:.55;cursor:default}
 <input id="password" type="password" autocomplete="current-password" placeholder="Password">
 <button id="loginBtn" class="primary" onclick="login()">SIGN IN</button>
 <div id="loginMessage" class="msg err hidden"></div>
-<p class="small" style="margin-top:14px">v1.2.1 · Adaptive Mission System</p>
+<p class="small" style="margin-top:14px">v1.2.2-test · School Transfer Mode</p>
 </section>
 
 <section id="studentHome" class="hidden">
@@ -117,6 +117,7 @@ button:disabled{opacity:.55;cursor:default}
 <button id="recommendedBtn" class="primary" onclick="openRecommendedLesson()">START NEXT MISSION</button>
 <button class="secondary" onclick="startWeakTopics()">FIX MY WEAK SPOT</button>
 <button class="secondary" onclick="openLesson('mixed')">MIXED TENSES CHALLENGE</button>
+<button class="secondary" onclick="openLesson('schooltest')">📝 SCHOOL TEST — MIXED TENSES</button>
 <button class="secondary" onclick="openLesson('mixedgrammar')">MIXED GRAMMAR CHALLENGE</button>
 <button class="ghost" onclick="logout()">SIGN OUT</button>
 <p class="small" style="margin-top:14px">Current Mastery is based mainly on recent answers. Old mistakes stay in history but do not permanently hold your level down.</p>
@@ -132,7 +133,7 @@ button:disabled{opacity:.55;cursor:default}
  <strong>Training goal</strong>
  <div id="lessonGoal" class="small"></div>
 </div>
-<div class="item">
+<div id="themeBox" class="item">
  <strong>Mission theme</strong>
  <div class="small" style="margin-bottom:8px">The grammar stays the same; the situations change.</div>
  <select id="themeSelect" class="themeSelect">
@@ -145,8 +146,8 @@ button:disabled{opacity:.55;cursor:default}
    <option value="funny">😄 Funny situations</option>
  </select>
 </div>
-<button class="primary" onclick="startLessonTraining()">START MISSION</button>
-<button class="secondary" onclick="startAdaptiveFromLesson()">ADAPTIVE MISSION</button>
+<button id="startMissionBtn" class="primary" onclick="startLessonTraining()">START MISSION</button>
+<button id="adaptiveMissionBtn" class="secondary" onclick="startAdaptiveFromLesson()">ADAPTIVE MISSION</button>
 <button class="ghost" onclick="backToCourse()">← COURSE</button>
 </section>
 
@@ -219,6 +220,7 @@ button:disabled{opacity:.55;cursor:default}
  <div class="metric"><div class="small">Grammar recognition</div><div id="metricTense" class="big">—</div></div>
  <div class="metric"><div class="small">Form accuracy</div><div id="metricVerb" class="big">—</div></div>
  <div class="metric"><div class="small">Construction / accuracy</div><div id="metricConstruction" class="big">—</div></div>
+ <div class="metric"><div class="small">Free production</div><div id="metricProduction" class="big">—</div></div>
 </div>
 <h2 style="margin-top:20px">Needs attention</h2>
 <div id="needsAttention"><div class="small">No training data yet.</div></div>
@@ -267,6 +269,7 @@ let adminStudents=[];
 let practiceSource=[];
 let isMistakePractice=false;
 let isWeakMission=false;
+let isSchoolTransferMission=false;
 let missionCombo=0;
 let missionBestCombo=0;
 let remediationCount=0;
@@ -298,6 +301,7 @@ const BLOCKS={
  pastperfect:{name:'4. Past Perfect',desc:'Past Perfect · Past Perfect Continuous',topics:['past_perfect','past_perfect_continuous']},
  future:{name:'5. Future',desc:'going to · will · Present Continuous for future · Present Simple for future',topics:['going_to_future','will_future','present_continuous_future','present_simple_future']},
  mixed:{name:'6. Mixed Tenses Challenge',desc:'All tense forms mixed',topics:[]},
+ schooltest:{name:'School Test · Mixed Tenses',desc:'School-style independent sentence production and mixed tense gaps',topics:[]},
  specialmodals:{name:'7. Special Verbs & Modals',desc:'be · have got · there is/are · modal verbs · verb patterns · imperatives',topics:['special_verbs','modal_verbs','verb_patterns','imperatives']},
  clausesvoice:{name:'8. Clauses & Voice',desc:'question tags · conditionals · passive · reported speech · relative clauses',topics:['question_tags','conditionals','passive_voice','reported_speech','relative_clauses']},
  nounspronouns:{name:'9. Nouns, Articles & Pronouns',desc:'articles · plural nouns · pronouns and possessives',topics:['articles','plural_nouns','pronouns']},
@@ -419,6 +423,17 @@ const LESSONS={
      ['Strategy 3','Use signal words as clues, not as automatic rules.']
    ]
  
+ },
+ schooltest:{
+   title:'School Test — Mixed Tenses',
+   intro:'Practise the two task types used in Maxim’s school test: complete whole sentences from cues and choose the correct tense form from context.',
+   goal:'Transfer tense knowledge to independent school-style production without relying on recognition buttons or grammar hints.',
+   points:[
+     ['Part A — whole sentence','The tense name is given, just as on the school paper. Build the complete sentence or question from the cues.'],
+     ['Part B — verb in brackets','Use the sentence context to choose the tense. Type only the missing verb phrase.'],
+     ['Current focus','Past Perfect, Past Continuous, Past Perfect Continuous, questions with did + base verb, Present Perfect versus Present Perfect Continuous, and selected present/future contrasts.'],
+     ['Scoring','The 10-question mission is measured without Boss or Quick Repair. Use Fix These Mistakes after the result if needed.']
+   ]
  },
  specialmodals:{
    title:'Special Verbs & Modals',
@@ -4241,6 +4256,91 @@ const LEGACY_QUESTIONS=[
  ...SCHEDULE_ITEMS.map((r,i)=>makeScheduleQuestion(r,i))
 ];
 
+function schoolTransferQuestion(id,topic,grammar,kind,sentence,answers,why,priority=3,subskill='school_transfer'){
+ return {
+   id,block:'schooltest',topic,grammar,theme:'school',
+   difficulty:kind==='full_sentence'?3:2,
+   question_type:'fill_form',response_mode:'single',
+   subskill,production_kind:kind,school_transfer:true,school_priority:priority,
+   error_label:kind==='full_sentence'?'Free production':'School-style tense form',
+   sentence,original_blank:sentence,base:'',show_base:false,
+   answers,main:[],why,forms:'',options:[],word_order:[],
+   answer_prompt:kind==='full_sentence'
+     ? 'Write the complete sentence or question.'
+     : 'Type only the missing verb phrase for ___.',
+   answer_placeholder:kind==='full_sentence'
+     ? 'Complete sentence or question'
+     : 'Only the verb phrase for ___',
+   boss_strategy:'preserve'
+ };
+}
+
+const SCHOOL_TRANSFER_QUESTIONS=[
+ schoolTransferQuestion('ST_FULL_001','past_perfect','Past Perfect','full_sentence','Use Past Perfect. Cues: we — have — an accident.',['We had had an accident'],'Past Perfect = had + past participle. The past participle of have is had.',5,'school_past_perfect'),
+ schoolTransferQuestion('ST_FULL_002','present_simple','Present Simple','full_sentence',"Use Present Simple. Cues: she — often — shop — at Macy's.",["She often shops at Macy's"],'For he/she/it in Present Simple, add -s/-es to the verb.',3,'school_third_person'),
+ schoolTransferQuestion('ST_FULL_003','present_perfect','Present Perfect','full_sentence','Use Present Perfect. Make a question. Cues: you — ever — visit — your cousin — in Scotland.',['Have you ever visited your cousin in Scotland'],'Present Perfect questions use Have/Has + subject + past participle; ever comes before the past participle.',4,'school_present_perfect'),
+ schoolTransferQuestion('ST_FULL_004','going_to_future','going to-future','full_sentence','Use going to-future. Cues: I — travel — to London — next month.',['I am going to travel to London next month',"I'm going to travel to London next month"],'going to-future = am/is/are going to + base verb.',2,'school_future'),
+ schoolTransferQuestion('ST_FULL_005','past_simple','Past Simple','full_sentence','Use Past Simple. Make a question. Cues: you — ride — a camel — in Egypt.',['Did you ride a camel in Egypt'],'Past Simple questions use Did + subject + base verb.',5,'school_did_base'),
+ schoolTransferQuestion('ST_FULL_006','past_continuous','Past Continuous','full_sentence','Use Past Continuous. Cues: he — read — a book — when I saw him yesterday.',['He was reading a book when I saw him yesterday'],'Use Past Continuous for the action already in progress when another past event happened.',5,'school_past_continuous'),
+ schoolTransferQuestion('ST_FULL_007','past_perfect','Past Perfect','full_sentence','Use Past Perfect. Cues: she — sell — all her clothes — before she left.',['She had sold all her clothes before she left'],'The selling happened before the later past event, so use had + past participle.',5,'school_past_perfect'),
+ schoolTransferQuestion('ST_FULL_008','past_perfect_continuous','Past Perfect Continuous','full_sentence','Use Past Perfect Continuous. Cues: she — study — for hours — before she took a break.',['She had been studying for hours before she took a break'],'Use had been + -ing for an activity continuing for some time before a later past event.',4,'school_past_perfect_continuous'),
+ schoolTransferQuestion('ST_FULL_009','present_continuous','Present Continuous','full_sentence','Use Present Continuous. Cues: the city — carry out — construction — right now.',['The city is carrying out construction right now'],'right now signals an action in progress: is + verb-ing.',2,'school_present_continuous'),
+ schoolTransferQuestion('ST_FULL_010','present_simple','Present Simple','full_sentence','Use Present Simple. Cues: he — usually — read — the newspaper — in the morning.',['He usually reads the newspaper in the morning'],'A usual routine takes Present Simple; he requires reads.',3,'school_third_person'),
+ schoolTransferQuestion('ST_FULL_011','present_perfect_continuous','Present Perfect Continuous','full_sentence','Use Present Perfect Continuous. Cues: my producer — wait — for me — for two hours.',['My producer has been waiting for me for two hours'],'Use has been + -ing for an activity continuing over a period up to now.',4,'school_perfect_contrast'),
+ schoolTransferQuestion('ST_FULL_012','present_perfect','Present Perfect','full_sentence','Use Present Perfect. Cues: I — already — book — a flight.',['I have already booked a flight',"I've already booked a flight"],'Present Perfect = have + past participle; already normally follows have/has.',4,'school_present_perfect'),
+ schoolTransferQuestion('ST_FULL_013','past_simple','Past Simple','full_sentence','Use Past Simple. Make a question. Cues: you — speak — to my sister — yesterday.',['Did you speak to my sister yesterday'],'After did, use the base verb speak, not spoke.',5,'school_did_base'),
+ schoolTransferQuestion('ST_FULL_014','past_continuous','Past Continuous','full_sentence','Use Past Continuous. Cues: I — work — in the garden — when I fell.',['I was working in the garden when I fell'],'The longer background action uses was working; fell is the shorter event.',5,'school_past_continuous'),
+ schoolTransferQuestion('ST_FULL_015','present_continuous_future','Present Continuous for future','full_sentence','Use Present Continuous for a fixed arrangement. Cues: we — meet — the teacher — tomorrow at 4.',['We are meeting the teacher tomorrow at 4',"We're meeting the teacher tomorrow at 4"],'Present Continuous can describe a fixed future arrangement.',3,'school_future'),
+ schoolTransferQuestion('ST_FULL_016','will_future','will-future','full_sentence','Use will-future. Cues: I think — they — be — at home — by 5.',['I think they will be at home by 5',"I think they'll be at home by 5"],'Use will + base verb for a prediction.',2,'school_future'),
+ schoolTransferQuestion('ST_FULL_017','present_perfect','Present Perfect','full_sentence','Use Present Perfect. Cues: she — never — see — snow.',['She has never seen snow',"She's never seen snow"],'Present Perfect uses has + past participle; see → seen.',4,'school_present_perfect'),
+ schoolTransferQuestion('ST_FULL_018','past_perfect','Past Perfect','full_sentence','Use Past Perfect. Cues: before the match started — they — warm up.',['Before the match started, they had warmed up','Before the match started they had warmed up'],'The warm-up was complete before another past event, so use had + past participle.',5,'school_past_perfect'),
+ schoolTransferQuestion('ST_FULL_019','present_simple','Present Simple','full_sentence','Use Present Simple. Cues: my brother — go — to football training — every Tuesday.',['My brother goes to football training every Tuesday'],'A regular routine uses Present Simple; go becomes goes for third-person singular.',3,'school_third_person'),
+ schoolTransferQuestion('ST_FULL_020','past_simple','Past Simple','full_sentence','Use Past Simple. Make a negative sentence. Cues: she — not finish — her homework — yesterday.',['She did not finish her homework yesterday',"She didn't finish her homework yesterday"],'Past Simple negatives use did not/didn’t + base verb.',4,'school_did_base'),
+ schoolTransferQuestion('ST_FULL_021','present_perfect_continuous','Present Perfect Continuous','full_sentence',"Use Present Perfect Continuous. Cues: they — wait — since 3 o'clock.",["They have been waiting since 3 o'clock","They've been waiting since 3 o'clock"],'Use have been + -ing with since for an activity continuing up to now.',4,'school_perfect_contrast'),
+ schoolTransferQuestion('ST_FULL_022','past_perfect','Past Perfect','full_sentence','Use Past Perfect. Make a question. Cues: she — leave — before the lesson started.',['Had she left before the lesson started'],'Past Perfect questions put had before the subject.',5,'school_past_perfect'),
+ schoolTransferQuestion('ST_FULL_023','present_perfect','Present Perfect','full_sentence','Use Present Perfect. Cues: he — already — finish — the project.',['He has already finished the project',"He's already finished the project"],'Use has + past participle; already follows has.',4,'school_present_perfect'),
+ schoolTransferQuestion('ST_FULL_024','past_continuous','Past Continuous','full_sentence','Use Past Continuous. Cues: they — play — football — at 8 last night.',['They were playing football at 8 last night'],'An action in progress at a specific past time uses were + verb-ing.',5,'school_past_continuous'),
+
+ schoolTransferQuestion('ST_GAP_001','past_continuous','Past Continuous','gap','While I ___ in the garden, I fell and injured my back. (WORK)',['was working'],'The work was already in progress when the shorter event happened.',5,'school_past_continuous'),
+ schoolTransferQuestion('ST_GAP_002','past_continuous','Past Continuous','gap','He usually reads the newspaper in the morning, but when I saw him yesterday, he ___ a book. (READ)',['was reading'],'The reading was in progress at the moment when I saw him.',5,'school_past_continuous'),
+ schoolTransferQuestion('ST_GAP_003','present_perfect_continuous','Present Perfect Continuous','gap','I have to hurry. My producer ___ for me for two hours. (WAIT)',['has been waiting'],'for two hours describes an activity continuing up to now.',4,'school_perfect_contrast'),
+ schoolTransferQuestion('ST_GAP_004','past_perfect','Past Perfect','gap','Before he left for the US, he ___ all his clothes to a second-hand shop. (SELL)',['had sold'],'The selling happened before he left, so use Past Perfect.',5,'school_past_perfect'),
+ schoolTransferQuestion('ST_GAP_005','present_continuous_future','Present Continuous for future','gap','After five years of travelling through Asia, I ___ back to Europe next week; the trip is arranged. (COME)',['am coming'],'A fixed future arrangement can use Present Continuous.',3,'school_future'),
+ schoolTransferQuestion('ST_GAP_006','present_perfect','Present Perfect','gap','The trip is arranged because I ___ a flight. (ALREADY BOOK)',['have already booked'],'Present Perfect links the completed booking to the present arrangement.',4,'school_present_perfect'),
+ schoolTransferQuestion('ST_GAP_007','will_future','will-future','gap','I think they ___ at home by 5. (BE)',['will be'],'I think introduces a prediction; use will + base verb.',2,'school_future'),
+ schoolTransferQuestion('ST_GAP_008','past_perfect_continuous','Past Perfect Continuous','gap','She ___ for hours before she finally took a break. (STUDY)',['had been studying'],'The studying continued for hours before a later past event.',4,'school_past_perfect_continuous'),
+ schoolTransferQuestion('ST_GAP_009','past_simple','Past Simple','gap','___ to my sister yesterday? (YOU SPEAK)',['Did you speak'],'Past Simple questions use Did + subject + base verb.',5,'school_did_base'),
+ schoolTransferQuestion('ST_GAP_010','present_perfect','Present Perfect','gap','No, I ___ her for a long time. (NOT SEE)',["haven't seen",'have not seen'],'Present Perfect connects a period continuing up to now with the present.',4,'school_present_perfect'),
+ schoolTransferQuestion('ST_GAP_011','present_continuous','Present Continuous','gap','The city ___ construction on the main highway right now. (CARRY OUT)',['is carrying out'],'right now requires Present Continuous.',2,'school_present_continuous'),
+ schoolTransferQuestion('ST_GAP_012','present_simple','Present Simple','gap','He usually ___ the newspaper in the morning. (READ)',['reads'],'usually signals a routine; he takes the third-person -s form.',3,'school_third_person'),
+ schoolTransferQuestion('ST_GAP_013','past_simple','Past Simple','gap','Yesterday we ___ the last train home. (MISS)',['missed'],'A finished event at a finished past time uses Past Simple.',3,'school_past_simple'),
+ schoolTransferQuestion('ST_GAP_014','past_perfect','Past Perfect','gap','By the time we arrived, the film ___. (START)',['had started'],'The film started before we arrived, so use Past Perfect.',5,'school_past_perfect'),
+ schoolTransferQuestion('ST_GAP_015','past_continuous','Past Continuous','gap','At 8 last night, they ___ football. (PLAY)',['were playing'],'An action in progress at a specific past moment uses Past Continuous.',5,'school_past_continuous'),
+ schoolTransferQuestion('ST_GAP_016','present_perfect','Present Perfect','gap','Have you ever ___ a camel? (RIDE)',['ridden'],'After have in Present Perfect, use the past participle: ride → ridden.',4,'school_present_perfect'),
+ schoolTransferQuestion('ST_GAP_017','present_perfect_continuous','Present Perfect Continuous','gap',"They ___ since 3 o'clock. (WAIT)",['have been waiting'],'since + starting point commonly accompanies Present Perfect Continuous for an ongoing activity.',4,'school_perfect_contrast'),
+ schoolTransferQuestion('ST_GAP_018','present_simple','Present Simple','gap','My sister always ___ her homework after dinner. (DO)',['does'],'A routine uses Present Simple; do becomes does for third-person singular.',3,'school_third_person'),
+ schoolTransferQuestion('ST_GAP_019','past_simple','Past Simple','gap','Did he ___ the answer yesterday? (KNOW)',['know'],'After did, use the base verb.',5,'school_did_base'),
+ schoolTransferQuestion('ST_GAP_020','going_to_future','going to-future','gap','Look at those black clouds! It ___. (RAIN)',['is going to rain'],'Visible evidence supports going to-future.',2,'school_future'),
+ schoolTransferQuestion('ST_GAP_021','present_continuous_future','Present Continuous for future','gap','We ___ to Vienna tomorrow morning; the tickets are already booked. (TRAVEL)',['are travelling','are traveling'],'A fixed arrangement with tickets already booked can use Present Continuous.',3,'school_future'),
+ schoolTransferQuestion('ST_GAP_022','past_perfect','Past Perfect','gap',"He was tired because he ___ well the night before. (NOT SLEEP)",["hadn't slept",'had not slept'],'The sleeping happened before the later past state, so use Past Perfect.',5,'school_past_perfect'),
+ schoolTransferQuestion('ST_GAP_023','present_perfect','Present Perfect','gap',"She ___ her keys, so she can't open the door. (LOSE)",['has lost'],'A past action with a present result uses Present Perfect.',4,'school_present_perfect'),
+ schoolTransferQuestion('ST_GAP_024','past_continuous','Past Continuous','gap','While we ___ dinner, the phone rang. (EAT)',['were eating'],'The longer background action uses Past Continuous.',5,'school_past_continuous')
+];
+
+function validateSchoolTransferBank(){
+ const problems=[];
+ const ids=SCHOOL_TRANSFER_QUESTIONS.map(q=>q.id);
+ if(new Set(ids).size!==ids.length)problems.push('duplicate School Transfer IDs');
+ if(ids.some(id=>QUESTIONS.some(q=>q.id===id)))problems.push('School Transfer ID collides with main bank');
+ const full=SCHOOL_TRANSFER_QUESTIONS.filter(q=>q.production_kind==='full_sentence').length;
+ const gap=SCHOOL_TRANSFER_QUESTIONS.filter(q=>q.production_kind==='gap').length;
+ if(full<10||gap<10)problems.push('School Transfer pool too small');
+ if(SCHOOL_TRANSFER_QUESTIONS.some(q=>q.response_mode!=='single'||q.block!=='schooltest'))problems.push('invalid School Transfer contract');
+ if(problems.length){console.error('School Transfer bank validation failed:',problems);return false;}
+ console.info('School Transfer bank OK:',SCHOOL_TRANSFER_QUESTIONS.length,'questions;',full,'full-sentence;',gap,'gap.');
+ return true;
+}
+
 const QUESTIONS=[
  ...LEGACY_QUESTIONS,
  ...PHASE2_QUESTIONS,
@@ -4330,7 +4430,7 @@ QUESTIONS.forEach(finalizePracticeQuestion);
 
 // Stable lookup lets adaptive/mastery/Admin logic recover frontend-only metadata
 // (response mode, subskill, error label) from the persisted question_id.
-const QUESTION_BY_ID=new Map(QUESTIONS.map(q=>[q.id,q]));
+const QUESTION_BY_ID=new Map([...QUESTIONS,...SCHOOL_TRANSFER_QUESTIONS].map(q=>[q.id,q]));
 function questionMetaById(id){return id?QUESTION_BY_ID.get(id)||null:null;}
 
 function validateQuestionBank(){
@@ -4384,6 +4484,7 @@ function validateQuestionBank(){
  return true;
 }
 validateQuestionBank();
+validateSchoolTransferBank();
 
 // Phase 1: generalized question contract.
 // Existing v1.1 content explicitly uses dual mode; future curriculum can opt into single mode
@@ -4413,7 +4514,8 @@ function answerPlaceholder(q){
  return isSingleQuestion(q)?'Only the words for ___':'Type the complete verb form';
 }
 function evaluateQuestion(q,input,selected){
- const constructionOK=(q.answers||[]).some(a=>norm(a)===norm(input));
+ const normalizeAnswer=q?.school_transfer?schoolNorm:norm;
+ const constructionOK=(q.answers||[]).some(a=>normalizeAnswer(a)===normalizeAnswer(input));
  if(isSingleQuestion(q)){
    // The current RPC expects the three existing correctness fields. For a genuine
    // single-step grammar task, one answer supplies all three compatible signals.
@@ -4442,6 +4544,7 @@ function feedbackHeadline(q,grammarOK,constructionOK){
 }
 
 // v1.2.1 FEEDBACK RELEASE — validated against frozen v1.2 baseline.
+// v1.2.2 TEST — School Transfer Mode added without database/RPC changes.
 // v1.2 Phase 4 — mastery/adaptation helpers. Subskills remain frontend metadata;
 // no schema/RPC change is required because question_id is already persisted.
 const SUBSKILL_LABELS={
@@ -4484,6 +4587,7 @@ function buildSubskillMastery(answers){
  const grouped={};
  answers.forEach(a=>{
    const q=questionMetaById(a.question_id);
+   if(q?.school_transfer)return;
    if(!q?.topic||!q.subskill)return;
    grouped[q.topic]??={};
    (grouped[q.topic][q.subskill]??=[]).push(a);
@@ -4527,6 +4631,12 @@ function norm(s){
  return (s||'').trim().toLowerCase()
   .replace(/[’]/g,"'")
   .replace(/\s+/g,' ');
+}
+function schoolNorm(s){
+ return norm(s)
+  .replace(/\s+([,;:])/g,'$1')
+  .replace(/[.!?]+$/,'')
+  .trim();
 }
 function shuffle(a){
  a=[...a];
@@ -4953,6 +5063,50 @@ function buildMissionQueue(pool,adaptive=false){
  return selected;
 }
 
+function schoolTransferWeight(q){
+ const mastery=masteryByTopic[q.topic]?.current;
+ let copies=Math.max(1,Number(q.school_priority||1));
+ if(mastery===undefined)copies+=1;
+ else if(mastery<60)copies+=4;
+ else if(mastery<75)copies+=3;
+ else if(mastery<90)copies+=1;
+ return copies;
+}
+function schoolTransferPick(pool,count){
+ const bag=[];
+ pool.forEach(q=>{for(let i=0;i<schoolTransferWeight(q);i++)bag.push(q);});
+ const chosen=[];
+ for(const q of shuffle(bag)){
+   if(chosen.some(x=>x.id===q.id))continue;
+   chosen.push(q);
+   if(chosen.length>=count)break;
+ }
+ for(const q of shuffle(pool)){
+   if(chosen.length>=count)break;
+   if(!chosen.some(x=>x.id===q.id))chosen.push(q);
+ }
+ return chosen;
+}
+function buildSchoolTransferQueue(){
+ activeMissionTheme='school';
+ const hardFresh=SCHOOL_TRANSFER_QUESTIONS.filter(q=>!previousMissionQuestionIds.has(q.id));
+ const choosePool=(kind)=>{
+   const hard=hardFresh.filter(q=>q.production_kind===kind);
+   const soft=hard.filter(q=>!recentQuestionCooldown[q.topic]?.has(q.id));
+   return soft.length>=5?soft:hard;
+ };
+ const full=schoolTransferPick(choosePool('full_sentence'),5);
+ const gaps=schoolTransferPick(choosePool('gap'),5);
+ if(full.length<5||gaps.length<5)throw new Error('School Transfer freshness pool exhausted.');
+ const selected=[];
+ for(let i=0;i<5;i++){
+   selected.push({...full[i],_stage:'mission'});
+   selected.push({...gaps[i],_stage:'mission'});
+ }
+ missionBaseQuestions=selected.length;
+ return selected;
+}
+
 function findRepairQuestion(q){
  const used=new Set(currentQueue.map(x=>x.id));
  let candidates=QUESTIONS.filter(x=>
@@ -4998,6 +5152,10 @@ window.openLesson=(code)=>{
    `<div class="item"><strong>${esc(h)}</strong><div class="small">${esc(b)}</div></div>`
  ).join('')+masteryRows;
  document.getElementById('themeSelect').value=currentTheme;
+ const schoolMode=code==='schooltest';
+ document.getElementById('themeBox').classList.toggle('hidden',schoolMode);
+ document.getElementById('adaptiveMissionBtn').classList.toggle('hidden',schoolMode);
+ document.getElementById('startMissionBtn').textContent=schoolMode?'START SCHOOL TEST':'START MISSION';
  showOnly('lesson');
 };
 
@@ -5014,7 +5172,8 @@ window.startBlock=async(code,adaptive=false)=>{
  sessionStartedAt=new Date();
  isMistakePractice=false;
  isWeakMission=false;
- currentMissionAdaptive=adaptive;
+ isSchoolTransferMission=code==='schooltest';
+ currentMissionAdaptive=adaptive && !isSchoolTransferMission;
  missionCombo=0;
  missionBestCombo=0;
  remediationCount=0;
@@ -5026,7 +5185,9 @@ window.startBlock=async(code,adaptive=false)=>{
      : QUESTIONS.filter(q=>q.block===code);
  previousBest=await getPreviousBest(code);
  previousMissionQuestionIds=await getPreviousMissionQuestionIds(code);
- currentQueue=buildMissionQueue(pool,adaptive);
+ currentQueue=isSchoolTransferMission
+   ? buildSchoolTransferQueue()
+   : buildMissionQueue(pool,adaptive);
 
  showOnly('quiz');
  renderQuestion();
@@ -5045,7 +5206,7 @@ window.startWeakTopics=async()=>{
  }
  const pool=QUESTIONS.filter(q=>weak.includes(q.topic));
  currentBlock='mixed';currentLesson='mixed';questionIndex=0;sessionAnswers=[];sessionStartedAt=new Date();
- isMistakePractice=false;isWeakMission=true;currentMissionAdaptive=true;missionCombo=0;missionBestCombo=0;remediationCount=0;previousBest=null;
+ isMistakePractice=false;isWeakMission=true;isSchoolTransferMission=false;currentMissionAdaptive=true;missionCombo=0;missionBestCombo=0;remediationCount=0;previousBest=null;
  previousMissionQuestionIds=await getPreviousMissionQuestionIds('weak_topics');
  currentQueue=buildMissionQueue(pool,true);
  showOnly('quiz');renderQuestion();
@@ -5230,7 +5391,7 @@ window.checkAnswer=()=>{
  document.getElementById('bestComboBadge').textContent='Best '+missionBestCombo;
 
  let repairAdded=false;
- if(!fullyCorrect && !isMistakePractice && remediationCount<2){
+ if(!fullyCorrect && !isMistakePractice && !isSchoolTransferMission && remediationCount<2){
    const repair=findRepairQuestion(q);
    if(repair){
      currentQueue.splice(questionIndex+1,0,repair);
@@ -5375,8 +5536,8 @@ async function saveTraining(){
  }));
 
  const blockCode=isMistakePractice?'mistakes_'+currentBlock:isWeakMission?'weak_topics':currentBlock;
- const blockName=isMistakePractice?'Fix mistakes · '+BLOCKS[currentBlock].name:isWeakMission?'Weak Spot Mission':'Mission · '+BLOCKS[currentBlock].name;
- const missionMode=isMistakePractice?'mistake_repair':isWeakMission?'weak_spot':currentMissionAdaptive?'adaptive_mission':'standard_mission';
+ const blockName=isMistakePractice?'Fix mistakes · '+BLOCKS[currentBlock].name:isWeakMission?'Weak Spot Mission':isSchoolTransferMission?'School Test · Mixed Tenses':'Mission · '+BLOCKS[currentBlock].name;
+ const missionMode=isMistakePractice?'mistake_repair':isWeakMission?'weak_spot':isSchoolTransferMission?'school_transfer':currentMissionAdaptive?'adaptive_mission':'standard_mission';
 
  const {data,error}=await supabase.rpc('save_training_result_v10',{
    p_block_code:blockCode,
@@ -5398,6 +5559,7 @@ window.practiceMistakes=()=>{
  sessionStartedAt=new Date();
  isMistakePractice=true;
  isWeakMission=false;
+ isSchoolTransferMission=false;
  currentMissionAdaptive=true;
  missionCombo=0;
  missionBestCombo=0;
@@ -5479,6 +5641,9 @@ window.refreshAdmin=async()=>{
  document.getElementById('metricTense').textContent=pct('grammar_recognition_correct');
  document.getElementById('metricVerb').textContent=pct('verb_form_correct');
  document.getElementById('metricConstruction').textContent=pct('construction_correct');
+ const productionRows=answers.filter(a=>questionMetaById(a.question_id)?.production_kind==='full_sentence');
+ const productionScore=weightedMetric(productionRows,'construction_correct');
+ document.getElementById('metricProduction').textContent=productionScore===null?'—':productionScore+'%';
 
  const weak=Object.entries(adminMastery)
    .filter(([_,m])=>m.current<70)
